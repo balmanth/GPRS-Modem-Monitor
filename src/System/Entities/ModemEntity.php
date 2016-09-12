@@ -52,14 +52,21 @@ final class ModemEntity extends AbstractObject
     private $custom;
 
     /**
-     * Cria os objetos de manipulação dos sensores.
+     * Atualiza a lista de manipuladores de informações sobre os sensores.
      *
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
      * @return void
      */
-    private function upSensors()
+    private function updateSensors(array &$conversions)
     {
         foreach ($this->data['sensors'] as $index => $data) {
-            $this->sensors[$index] = new SensorEntity($this, $data);
+
+            if (! isset($this->sensors[$index])) {
+                $this->sensors[$index] = new SensorEntity($this, $data, $conversions);
+            } else {
+                $this->sensors[$index]->update($data, $conversions);
+            }
         }
     }
 
@@ -70,8 +77,10 @@ final class ModemEntity extends AbstractObject
      *            Informações do modem.
      * @param int $stage
      *            Etapa atual do modem (Atualizado por referência).
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
      */
-    public function __construct(array &$data, int &$stage)
+    public function __construct(array &$data, int &$stage, array &$conversions)
     {
         $this->data = $data;
         $this->stage = &$stage;
@@ -79,7 +88,24 @@ final class ModemEntity extends AbstractObject
         $this->sensors = [];
         $this->custom = [];
 
-        $this->upSensors();
+        $this->updateSensors($conversions);
+    }
+
+    /**
+     * Atualiza as informações do modem.
+     *
+     * @param array $data
+     *            Novas informações do modem.
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
+     */
+    public function update(array &$data, array &$conversions)
+    {
+        $this->data['host'] = $data['host'];
+        $this->data['port'] = $data['port'];
+        $this->data['next_index'] = $data['next_index'];
+
+        $this->updateSensors($conversions);
     }
 
     /**

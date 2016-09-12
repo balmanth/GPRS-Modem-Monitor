@@ -137,7 +137,7 @@ final class ResetTotalizersAction extends AbstractABSMonitorCallable
             foreach ($sensors as $sensor) {
 
                 $this->logger->logInfo('channel: %s reset', $sensor->getIndex());
-                $sensor->updateReset();
+                $sensor->updateResetDate();
             }
         }
 

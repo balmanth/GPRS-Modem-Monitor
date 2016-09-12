@@ -6,6 +6,7 @@ use BCL\System\AbstractObject;
 use BCL\System\Logger\LogManager;
 use GPRS\System\ModemManagerInterface;
 use GPRS\System\ConnectionManager;
+use GPRS\System\Entities\ConversionEntity;
 use GPRS\System\Entities\ModemEntity;
 
 /**
@@ -70,7 +71,7 @@ abstract class AbstractMonitorBase extends AbstractObject
     private $lastUpdate;
 
     /**
-     * Lista de modems do monitor.
+     * Lista de manipuladores das informações dos modems.
      *
      * @var array
      */
@@ -84,6 +85,13 @@ abstract class AbstractMonitorBase extends AbstractObject
     private $modemStages;
 
     /**
+     * Lista de manipuladores das informações de conversão dos dados armazenados pelos sensores dos modems.
+     *
+     * @var array
+     */
+    private $conversionEntities;
+
+    /**
      * Lista de gerenciadores de ações para as etapas de monitoramento.
      *
      * @var array
@@ -91,14 +99,42 @@ abstract class AbstractMonitorBase extends AbstractObject
     private $listeners;
 
     /**
-     * Atualiza a lista de modems monitorados.
+     * Atualiza a lista de informações de conversão.
      *
-     * @return int Quantidade de novos modems carregados.
+     * @return void
      */
-    private function updateModemList(): int
+    private function updateConversionList()
     {
-        $total = 0;
+        $response = $this->modems->loadConversions();
+        $updated = 0;
+        $loaded = 0;
+
+        foreach ($response as &$data) {
+
+            $id = $data['id'];
+
+            if (! isset($this->conversionEntities[$id])) {
+                ++ $loaded;
+                $this->conversionEntities[$id] = new ConversionEntity($data);
+            } else {
+                ++ $updated;
+                $this->conversionEntities[$id]->update($data);
+            }
+        }
+
+        $this->logger->logInfo('%d loaded and %d updated conversions', $loaded, $updated);
+    }
+
+    /**
+     * Atualiza a lista de informações dos modems.
+     *
+     * @return void
+     */
+    private function updateModemList()
+    {
         $response = $this->modems->loadModems($this->type);
+        $updated = 0;
+        $loaded = 0;
 
         foreach ($response as &$data) {
 
@@ -106,14 +142,18 @@ abstract class AbstractMonitorBase extends AbstractObject
 
             if (! isset($this->modemEntities[$id])) {
 
-                $this->modemStages[$id] = 0;
-                $this->modemEntities[$id] = new ModemEntity($data, $this->modemStages[$id]);
+                ++ $loaded;
 
-                ++ $total;
+                $this->modemStages[$id] = 0;
+                $this->modemEntities[$id] = new ModemEntity($data, $this->modemStages[$id], $this->conversionEntities);
+            } else {
+
+                ++ $updated;
+                $this->modemEntities[$id]->update($data, $this->conversionEntities);
             }
         }
 
-        return $total;
+        $this->logger->logInfo('%d loaded and %d updated modems', $loaded, $updated);
     }
 
     /**
@@ -125,9 +165,8 @@ abstract class AbstractMonitorBase extends AbstractObject
     {
         if ((time() - $this->lastUpdate) > self::API_UPDATE_TIME) {
 
-            if (($total = $this->updateModemList()) > 0) {
-                $this->logger->logInfo('%d loaded modems', $total);
-            }
+            $this->updateConversionList();
+            $this->updateModemList();
 
             $this->lastUpdate = time();
         }
@@ -172,6 +211,7 @@ abstract class AbstractMonitorBase extends AbstractObject
         $this->lastUpdate = 0;
         $this->modemEntities = [];
         $this->modemStages = [];
+        $this->conversionEntities = [];
         $this->listeners = [];
     }
 
@@ -220,8 +260,7 @@ abstract class AbstractMonitorBase extends AbstractObject
                 continue;
             }
 
-            // O servidor 'gateway' da ABS parece não suportar um número grande de solicitações simultâneas
-            // O monitor irá aguardar alguns segundos para dar continuidade ao processo.
+            // Impede sobrecarga do gateway e do servidor local.
             sleep(1);
 
             $this->logger->setModem($modemEntity);

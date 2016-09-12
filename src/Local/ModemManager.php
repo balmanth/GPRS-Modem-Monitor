@@ -12,6 +12,11 @@ use GPRS\System\Entities\SensorEntity;
  * Utilize os métodos demonstrados abaixo para carregar as informações de uma base de dados ou API.
  * A informações abaixo são estruturadas de acordo com as características fornecidas pelos modems ABS/ALR.
  *
+ * Para de melhor identificação:
+ * Os Id's das informações de conversão iniciam no valor 100,.
+ * Os Id's dos sensores iniciam no valor 10.
+ * Os Id's dos modems iniciam no valor 0.
+ *
  * @since 1.0
  * @version 1.0
  * @author Silas B. Domingos
@@ -22,6 +27,23 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
 {
 
     /**
+     * Cria uma conversão fictícia para ser relacionada a um sensor do modem.
+     *
+     * @param int $resetTime
+     *            Intervalo para reset das infromações do sensor.
+     * @return array
+     */
+    private function createConversion(int $resetTime): array
+    {
+        static $id = 100; // Id único da conversão.
+
+        return [
+            'id' => $id ++,
+            'reset_time' => $resetTime
+        ];
+    }
+
+    /**
      * Cria um sensor fictício para um modem teste.
      *
      * @param int $type
@@ -29,19 +51,19 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
      * @param int $index
      *            Posição do sensor.
      *            Indica a posição de memória com os dados do sensor e posição física do conector no modem.
-     * @param int $resetInterval
-     *            Intervalo para resetar os valores (Suportado somente por sensores do tipo totalizador).
+     * @param int $conversionId
+     *            Id das informações de conversão deste sensor.
      * @return array
      */
-    private function createSensor(int $type, int $index, int $resetInterval = 0): array
+    private function createSensor(int $type, int $index, int $conversionId = 0): array
     {
-        static $id = 0; // Id único do sensor.
+        static $id = 10; // Id único do sensor.
 
         return [
             'id' => $id ++,
+            'conversion_id' => $conversionId,
             'type' => $type,
             'index' => $index,
-            'reset_interval' => $resetInterval,
             'last_reset_date' => 0
         ];
     }
@@ -72,7 +94,7 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
 
                 // Totalizador de pulso (Até 8 entradas, suporta reset)
                 $this->createSensor(SensorEntity::MODEM_SENSOR_PC, 0), // Sem reset
-                $this->createSensor(SensorEntity::MODEM_SENSOR_PC, 1, 3600), // Com reset a cada 1h
+                $this->createSensor(SensorEntity::MODEM_SENSOR_PC, 1, 100), // Id da conversão com reset a cada 1h
 
                 // Frequência de pulso (Até 8 entradas, não suporta reset)
                 $this->createSensor(SensorEntity::MODEM_SENSOR_PF, 0),
@@ -80,15 +102,35 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
 
                 // Totalizador de tempo (Até 8 entradas, suporta reset)
                 $this->createSensor(SensorEntity::MODEM_SENSOR_TC, 0), // Sem reset
-                $this->createSensor(SensorEntity::MODEM_SENSOR_TC, 0, 7200), // Com reset a cada 2h
+                $this->createSensor(SensorEntity::MODEM_SENSOR_TC, 0, 101), // Id da conversão com reset a cada 2h
 
                 // Totalizador de valor analógico (Até 8 entradas, suporta reset)
                 $this->createSensor(SensorEntity::MODEM_SENSOR_TZ, 0), // Sem reset
-                $this->createSensor(SensorEntity::MODEM_SENSOR_TZ, 0, 10800), // Com reset a cada 3h
+                $this->createSensor(SensorEntity::MODEM_SENSOR_TZ, 0, 102), // Id da conversão com reset a cada 3h
 
                 // Qualidade do sinal
                 $this->createSensor(SensorEntity::MODEM_SENSOR_SQ, 0, 0)
             ]
+        ];
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @see GPRS\System\ModemManagerInterface::loadConversions()
+     */
+    public function loadConversions(): array
+    {
+        return [
+            // Reset a cada 1h
+            $this->createConversion(3600),
+
+            // Reset a cada 2h
+            $this->createConversion(7200),
+
+            // Reset a cada 3h
+            $this->createConversion(10800)
         ];
     }
 

@@ -75,8 +75,8 @@ final class GetChannelsAction extends AbstractABSMonitorCallable
         $this->updateChannel('A1', $data[1]); // Entrada analógica 1-8
         $this->updateChannel('A2', $data[2]); // Entrada analógica 9-16
         $this->updateChannel('PF', $data[3]); // Frequência de pulso
-        $this->updateChannel('PC', $data[4]); // Contagem de pulso
-        $this->updateChannel('TC', $data[5]); // Contagem de tempo
+        $this->updateChannel('PC', $data[4]); // Totalizador de pulso
+        $this->updateChannel('TC', $data[5]); // Totalizador de tempo
         $this->updateChannel('TZ', $data[6]); // Totalizador de valor analógico
 
         $this->modem->setData('modem.channels', true);

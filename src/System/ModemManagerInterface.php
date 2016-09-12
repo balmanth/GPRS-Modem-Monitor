@@ -15,11 +15,18 @@ interface ModemManagerInterface
 {
 
     /**
+     * Carrega a lista de conversão dos dados armazenados pelos sensores dos modems.
+     *
+     * @return array
+     */
+    public function loadConversions(): array;
+
+    /**
      * Carrega a lista de modems.
      *
      * @param int $type
      *            Tipo de modem.
-     * @return array Lista de informações dos modems.
+     * @return array
      */
     public function loadModems(int $type): array;
 }

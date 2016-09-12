@@ -87,19 +87,51 @@ final class SensorEntity extends AbstractObject
     private $modem;
 
     /**
+     * Atualiza as informações de conversão do sensor.
+     *
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
+     * @return void
+     */
+    private function updateConversion(array &$conversions)
+    {
+        $conversionId = $this->data['conversion_id'];
+        $resetInterval = (isset($conversions[$conversionId]) ? $conversions[$conversionId]->getResetTime() : 0);
+
+        $this->data['reset_time'] = $resetInterval;
+    }
+
+    /**
      * Construtor.
      *
      * @param ModemEntity $modem
      *            Instância do manipulador de informações do modem.
      * @param array $data
      *            Informações do sensor.
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
      */
-    public function __construct(ModemEntity $modem, array &$data)
+    public function __construct(ModemEntity $modem, array &$data, array &$conversions)
     {
         $this->modem = $modem;
         $this->data = $data;
 
-        $this->data['reset_interval'] = 3600; // Carregar da API
+        $this->updateConversion($conversions);
+    }
+
+    /**
+     * Atualiza as informações do sensor.
+     *
+     * @param array $data
+     *            Novas informações do sensor.
+     * @param array $conversions
+     *            Lista de manipuladores das informações de conversão.
+     */
+    public function update(array &$data, array &$conversions)
+    {
+        $this->data['conversion_id'] = $data['conversion_id'];
+
+        $this->updateConversion($conversions);
     }
 
     /**
@@ -111,7 +143,7 @@ final class SensorEntity extends AbstractObject
     public function needReset(): bool
     {
         // Intervalo de reset não definido.
-        if (($resetInterval = (int) $this->data['reset_interval']) === 0) {
+        if (($resetInterval = (int) $this->data['reset_time']) === 0) {
             return false;
         }
 
@@ -129,7 +161,7 @@ final class SensorEntity extends AbstractObject
      *
      * @return void
      */
-    public function updateReset()
+    public function updateResetDate()
     {
         $this->data['last_reset_date'] = time();
     }
