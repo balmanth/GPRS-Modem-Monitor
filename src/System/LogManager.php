@@ -188,20 +188,20 @@ final class LogManager extends \BCL\System\Logger\LogManager
     /**
      * Registra uma atividade que originou um erro.
      *
-     * @param int $errCode
+     * @param int $code
      *            Código de erro.
-     * @param string $errMessage
-     *            Mensagem de erro.
      * @param string $operation
      *            Descrição da operação envolvida.
+     * @param string $message
+     *            Mensagem de erro.
      * @return void
      */
-    public function logError(int $errCode, string $errMessage, string $operation)
+    public function logError(int $code, string $operation, string $message)
     {
         $this->command = 'ERROR';
         $this->message = 'code: %d, operation: "%s" message: "%s"';
 
-        $this->log($errCode, $errMessage);
+        $this->log($code, $operation, $message);
     }
 
     /**
