@@ -68,6 +68,8 @@ final class ConnectionManager extends AbstractObject
      */
     private function connect(ClientStream $connection)
     {
+        $this->logger->setConnection($connection);
+
         try {
             $connection->connect();
             sleep(2);
@@ -76,6 +78,8 @@ final class ConnectionManager extends AbstractObject
             $this->holding[$connection->getHashCode()] = (time() + 300);
             $this->logger->logException($exception);
         }
+
+        $this->logger->setConnection(NULL);
     }
 
     /**
