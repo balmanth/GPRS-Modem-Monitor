@@ -7,7 +7,7 @@ use BCL\System\AbstractException;
 use BCL\System\Streams\Network\ClientStream;
 
 /**
- * Gerenciador de conexões ativas.
+ * Gerenciador de conexão com os gateways dos modems.
  *
  * @since 1.0
  * @version 1.0
@@ -73,7 +73,7 @@ final class ConnectionManager extends AbstractObject
             sleep(2);
         } catch (AbstractException $exception) {
 
-            $this->holding[$address] = (time() + 300);
+            $this->holding[$connection->getHashCode()] = (time() + 300);
             $this->logger->logException($exception);
         }
     }
@@ -120,13 +120,15 @@ final class ConnectionManager extends AbstractObject
     /**
      * Verifica se a conexão apresentou problemas e esta em modo de espera.
      *
-     * @param string $address
-     *            Endereço do cliente de conexão.
+     * @param ClientStream $connection
+     *            Instância da conexão.
      * @return bool
      */
-    private function isHolding(string $address): bool
+    private function isHolding(ClientStream $connection): bool
     {
-        return (isset($this->holding[$address]) && time() < $this->holding[$address]);
+        $hashCode = $connection->getHashCode();
+
+        return (isset($this->holding[$hashCode]) && time() < $this->holding[$hashCode]);
     }
 
     /**
@@ -190,10 +192,6 @@ final class ConnectionManager extends AbstractObject
     {
         $address = sprintf('%s:%d', $host, $port);
 
-        if ($this->isHolding($address)) {
-            return NULL;
-        }
-
         if (! isset($this->connections[$address])) {
 
             $this->connections[$address] = $this->create($host, $port);
@@ -201,6 +199,11 @@ final class ConnectionManager extends AbstractObject
         }
 
         $connection = $this->connections[$address];
+
+        if ($this->isHolding($connection)) {
+            return NULL;
+        }
+
         $this->logger->setConnection($connection);
 
         if (! $this->isReady($connection, $this->pending[$address])) {
