@@ -1,6 +1,6 @@
 <?php
 declare(strict_types = 1);
-namespace GPRS\System\Monitor\ABS;
+namespace GPRS\System\Monitor\ABS\Modem;
 
 use BCL\System\Logger\LogManager;
 use GPRS\System\ModemManagerInterface;
@@ -8,79 +8,72 @@ use GPRS\System\ConnectionManager;
 use GPRS\System\Monitor\AbstractMonitorBase;
 
 /**
- * Monitor dos modem fornecidos pela ABS/ALR.
+ * Monitor dos modems fornecidos pela ABS/ALR.
  *
  * @since 1.0
  * @version 1.0
  * @author Silas B. Domingos
  * @copyright Silas B. Domingos
- * @package GPRS\System\Monitor\ABS
+ * @package GPRS\System\Monitor\ABS\Modem
  */
-final class ABSModemMonitor extends AbstractMonitorBase
+final class ABSMonitor extends AbstractMonitorBase
 {
 
     /**
-     * Tipo de modems do monitor.
+     * Obtém o nível de qualidade de sinal.
      *
      * @var int
      */
-    const MODEM_TYPE_ABS = 0x01;
+    const MODEM_GET_SIGNAL_QUALITY = 1000;
 
     /**
-     * Reinicia um totalizador do modem.
+     * Obtém as informações do hardware.
      *
      * @var int
      */
-    const MODEM_GET_SIG_QUALITY = 0x00;
+    const MODEM_GET_DEVICE_INFO = 1001;
 
     /**
-     * Obtém as informações do hardware do modem.
+     * Obtém o timestamp do relógio interno.
      *
      * @var int
      */
-    const MODEM_GET_DEVICE_INFO = 0x01;
+    const MODEM_GET_TIME = 1002;
 
     /**
-     * Obtém o timestamp do relógio interno do modem.
+     * Define o timestamp do relógio interno.
      *
      * @var int
      */
-    const MODEM_GET_TIME = 0x02;
+    const MODEM_SET_TIME = 1003;
 
     /**
-     * Define o timestamp do relógio interno do modem.
+     * Obtém as informações sobre os canais.
      *
      * @var int
      */
-    const MODEM_SET_TIME = 0x03;
+    const MODEM_GET_CHANNELS = 1004;
 
     /**
-     * Obtém os canais do modem.
+     * Reinicia os totalizadores.
      *
      * @var int
      */
-    const MODEM_GET_CHANNELS = 0x04;
+    const MODEM_RESET_TOTALIZERS = 1005;
 
     /**
-     * Reinicia um totalizador do modem.
+     * Obtém as informações de memória.
      *
      * @var int
      */
-    const MODEM_RESET_TOTALIZERS = 0x05;
+    const MODEM_GET_MEMORY_INFO = 1006;
 
     /**
-     * Obtém as informações de memória do modem.
+     * Obtém dados de um bloco de memória.
      *
      * @var int
      */
-    const MODEM_GET_MEMORY_INFO = 0x06;
-
-    /**
-     * Obtém dados da memória do modem.
-     *
-     * @var int
-     */
-    const MODEM_GET_MEMORY_DATA = 0x07;
+    const MODEM_GET_MEMORY_DATA = 1007;
 
     /**
      *
@@ -90,9 +83,9 @@ final class ABSModemMonitor extends AbstractMonitorBase
      */
     public function __construct(ModemManagerInterface $modems, LogManager $log, ConnectionManager $connections)
     {
-        parent::__construct($modems, $log, $connections, self::MODEM_TYPE_ABS);
+        parent::__construct($modems, $log, $connections, self::MONITOR_ABS_MODEM);
 
-        $this->addListener(self::MODEM_GET_SIG_QUALITY)
+        $this->addListener(self::MODEM_GET_SIGNAL_QUALITY)
             ->attach(new Actions\GetSignalQualityAction());
 
         $this->addListener(self::MODEM_GET_DEVICE_INFO)
@@ -108,7 +101,7 @@ final class ABSModemMonitor extends AbstractMonitorBase
             ->attach(new Actions\GetChannelsAction());
 
         $this->addListener(self::MODEM_RESET_TOTALIZERS)
-            ->attach(new Actions\ResetTotalizersAction());
+            ->attach(new Actions\ClearTotalizersAction());
 
         $this->addListener(self::MODEM_GET_MEMORY_INFO)
             ->attach(new Actions\GetMemoryInfoAction());

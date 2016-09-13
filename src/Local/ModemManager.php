@@ -5,6 +5,7 @@ namespace GPRS\Local;
 use BCL\System\AbstractObject;
 use GPRS\System\ModemManagerInterface;
 use GPRS\System\Entities\SensorEntity;
+use GPRS\System\Entities\ModemEntity;
 
 /**
  * Contêm os métodos para gestão das informações dos modems.
@@ -118,9 +119,9 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
      *
      * {@inheritDoc}
      *
-     * @see GPRS\System\ModemManagerInterface::loadConversions()
+     * @see GPRS\System\ModemManagerInterface::loadConversions($type)
      */
-    public function loadConversions(): array
+    public function loadConversions(int $type): array
     {
         return [
             // Reset a cada 1h
@@ -147,4 +148,14 @@ final class ModemManager extends AbstractObject implements ModemManagerInterface
             $this->createModem('127.0.0.1', 5001)
         ];
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @see GPRS\System\ModemManagerInterface::addModemData($modem, $channels, $index, $status, $time, $values)
+     */
+    public function addModemData(ModemEntity $modem, array &$channels, int $index, int $status, int $time,
+        array &$values): bool
+    {}
 }

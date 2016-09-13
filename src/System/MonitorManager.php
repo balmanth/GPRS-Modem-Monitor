@@ -91,7 +91,12 @@ final class MonitorManager extends AbstractObject
     public function monitore()
     {
         foreach ($this->monitors as $monitor) {
+
+            $this->logger->setMonitor($monitor);
+
             $monitor->monitore();
+
+            $this->logger->setMonitor(NULL);
         }
     }
 }

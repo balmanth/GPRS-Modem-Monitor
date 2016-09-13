@@ -29,6 +29,20 @@ abstract class AbstractMonitorBase extends AbstractObject
     const API_UPDATE_TIME = 300;
 
     /**
+     * Identifica os monitores do tipo modem celular ABS.
+     *
+     * @var int
+     */
+    const MONITOR_ABS_MODEM = 0x01;
+
+    /**
+     * Identifica os monitores do tipo datalogger compacto ABS.
+     *
+     * @var int
+     */
+    const MONITOR_ABS_DATALOGGER = 0x02;
+
+    /**
      * Tipo de modems do monitor.
      *
      * @var int
@@ -105,7 +119,7 @@ abstract class AbstractMonitorBase extends AbstractObject
      */
     private function updateConversionList()
     {
-        $response = $this->modemManager->loadConversions();
+        $response = $this->modemManager->loadConversions($this->type);
         $updated = 0;
         $loaded = 0;
 

@@ -62,7 +62,7 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
      *            Quantidade máxima de tentativas da operação.
      * @return void
      */
-    private function updateRetry(string $operation, int $maxtry)
+    private function updateFailedAttempts(string $operation, int $maxtry)
     {
         $configKey = 'response.' . $operation . '.try';
         $retries = (int) $this->modem->getData($configKey);
@@ -91,10 +91,10 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
      *
      * @return bool
      */
-    private function tryWrite(): bool
+    private function tryWriteCommand(): bool
     {
         if (! $this->connection->canWrite()) {
-            $this->updateRetry('write', self::MAX_WRITING_RETRY);
+            $this->updateFailedAttempts('write', self::MAX_WRITING_RETRY);
             return false;
         }
 
@@ -114,10 +114,10 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
      *
      * @return bool
      */
-    private function tryRead(): bool
+    private function tryReadCommand(): bool
     {
         if (! $this->connection->canRead()) {
-            $this->updateRetry('read', self::MAX_READING_RETRY);
+            $this->updateFailedAttempts('read', self::MAX_READING_RETRY);
             return false;
         }
 
@@ -134,24 +134,14 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     }
 
     /**
-     * Checa se a configuração de sinal foi definida.
-     *
-     * @return bool
-     */
-    protected function modemReady(): bool
-    {
-        return (bool) $this->modem->getData('modem.signal');
-    }
-
-    /**
      * Envia uma mensagem para o modem.
      *
      * @param string $message
-     *            Mensagem modbus.
+     *            Mensagem do comando Modbus.
      * @return bool True quando a mensagem foi enviada.
      *         False quando contrário.
      */
-    protected function writeMessage(string &$message): bool
+    protected function writeMessage(string $message): bool
     {
         $length = strlen($message);
         $bytes = $this->connection->write($message);
@@ -232,10 +222,10 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     protected function execute(): bool
     {
         if (! (bool) $this->modem->getStageData('response.waiting')) {
-            return $this->tryWrite();
+            return $this->tryWriteCommand();
         }
 
-        return $this->tryRead();
+        return $this->tryReadCommand();
     }
 
     /**

@@ -34,7 +34,8 @@ $modems = new ModemManager();
 $connections = new ConnectionManager($logger);
 
 $monitors = new MonitorManager($modems, $logger, $connections);
-$monitors->register('ABS\\ABSModemMonitor');
+$monitors->register('ABS\\Modem\\ABSMonitor');
+$monitors->register('ABS\\Datalogger\\ABSMonitor');
 
 // loop de monitoramento.
 while (true) {

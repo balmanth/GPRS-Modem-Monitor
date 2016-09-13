@@ -4,6 +4,7 @@ namespace GPRS\System;
 
 use BCL\System\Streams\Network\ClientStream;
 use GPRS\System\Entities\ModemEntity;
+use GPRS\System\Monitor\AbstractMonitorBase;
 
 /**
  * Gerênciador de objetos para manipulação de registros de atividades.
@@ -18,25 +19,32 @@ final class LogManager extends \BCL\System\Logger\LogManager
 {
 
     /**
-     * Comando do registro.
-     *
-     * @var string
-     */
-    private $command;
-
-    /**
-     * Modem do registro.
+     * Instância da entidade com informações do modem associado ao registro.
      *
      * @var ModemEntity
      */
     private $modemEntity;
 
     /**
-     * Conexão do registro.
+     * Instância da conexão associada ao registro.
      *
      * @var ClientStream
      */
     private $connection;
+
+    /**
+     * Instância do monitor associado ao registro.
+     *
+     * @var AbstractMonitorBase
+     */
+    private $monitor;
+
+    /**
+     * Comando do registro.
+     *
+     * @var string
+     */
+    private $command;
 
     /**
      * Mensagem do registro.
@@ -58,7 +66,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
     }
 
     /**
-     * Define a instância da conexão relacionada ao registro.
+     * Define a instância da conexão associada ao registro.
      *
      * @param ClientStream|NULL $connection
      *            Instância da conexão ou Null para desassociar a conexão atual.
@@ -70,6 +78,18 @@ final class LogManager extends \BCL\System\Logger\LogManager
     }
 
     /**
+     * Define a instância do monitor associado ao registro.
+     *
+     * @param AbstractMonitorBase|NULL $monitor
+     *            Instância do monitor ou Null para desassociar o monitor atual.
+     * @return void
+     */
+    public function setMonitor($monitor)
+    {
+        $this->monitor = $monitor;
+    }
+
+    /**
      * Envia um registro para os objetos de manipulação de registros.
      *
      * @param mixed ...$params
@@ -78,11 +98,12 @@ final class LogManager extends \BCL\System\Logger\LogManager
      */
     public function log(...$params)
     {
-        $stage = (isset($this->modemEntity) ? $this->modemEntity->getStage() : - 1);
-        $address = isset($this->connection) ? $this->connection->getAddress() : 'none';
+        $monitor = (isset($this->monitor) ? substr($this->monitor->getClass(), 24) : '-');
+        $stage = (isset($this->modemEntity) ? $this->modemEntity->getStage() : '-');
+        $address = isset($this->connection) ? $this->connection->getAddress() : '-';
         $message = (isset($this->message) ? vsprintf('\'' . $this->message . '\'', $params) : '');
 
-        parent::log($this->command, $stage, $address, $message);
+        parent::log($monitor, $this->command, $stage, $address, $message);
     }
 
     /**
