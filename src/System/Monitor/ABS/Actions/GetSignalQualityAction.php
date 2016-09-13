@@ -76,6 +76,10 @@ final class GetSignalQualityAction extends AbstractABSMonitorCallable
                 $this->modem->setData('modem.signal', true);
 
                 $this->logger->logInfo('signal quality: %0.2f%% (%ddBm)', $percent, $signal);
+            } else {
+
+                $percent = ((($signal - self::MIN_DBM) / (self::MAX_DBM - self::MIN_DBM)) * 100);
+                $this->logger->logInfo('signal quality: stable on %0.2f%% (%ddBm)', $percent, $signal);
             }
 
             $this->sleepStage(180); // Próxima execução em 3min.
