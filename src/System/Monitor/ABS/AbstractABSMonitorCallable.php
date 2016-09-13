@@ -100,7 +100,9 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
             return false;
         }
 
+        $this->modem->setData('response.write.try', 0);
         $this->modem->setStageData('response.waiting', true);
+
         return true;
     }
 
@@ -117,11 +119,13 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
         }
 
         if (! $this->readResponse()) {
-            $this->sleepModem(10);
+            $this->sleepModem(10, false);
             return false;
         }
 
+        $this->modem->setData('response.read.try', 0);
         $this->modem->setStageData('response.waiting', false);
+
         $this->modem->nextStage();
         return true;
     }
