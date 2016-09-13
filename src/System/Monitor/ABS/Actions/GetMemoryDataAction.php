@@ -93,9 +93,10 @@ final class GetMemoryDataAction extends AbstractABSMonitorAction
         ];
 
         if ($this->manager->addModemData($this->modem, $channels, $index, $status, $time, $values)) {
-
-            $this->logger->logNotice('record index written: %05d', $index);
+            $this->logger->logNotice('record index: %05d success', $index);
             $this->nextIndex();
+        } else {
+            $this->logger->logNotice('record index: %05d failure', $index);
         }
     }
 
