@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor;
 
 use BCL\System\AbstractObject;
+use BCL\System\ModemManagerInterface;
 use BCL\System\Logger\LogManager;
 use GPRS\System\Entities\ModemEntity;
 
@@ -19,11 +20,11 @@ abstract class AbstractMonitorCallable extends AbstractObject
 {
 
     /**
-     * Instância do gerenciador de registros.
+     * Instância do gerenciador de modems.
      *
-     * @var LogManager
+     * @var ModemManagerInterface
      */
-    protected $logger;
+    protected $manager;
 
     /**
      * Instância com as informações do modem.
@@ -33,11 +34,18 @@ abstract class AbstractMonitorCallable extends AbstractObject
     protected $modem;
 
     /**
+     * Instância do gerenciador de registros.
+     *
+     * @var LogManager
+     */
+    protected $logger;
+
+    /**
      * Executa a ação.
      *
-     * @return void
+     * @return bool
      */
-    abstract protected function execute();
+    abstract protected function execute(): bool;
 
     /**
      * Verifica se o modem esta em espera.
@@ -59,7 +67,7 @@ abstract class AbstractMonitorCallable extends AbstractObject
     }
 
     /**
-     * Verifica s a etapa atual esta em espera.
+     * Verifica se a etapa atual esta em espera.
      *
      * @return bool
      */
@@ -131,13 +139,16 @@ abstract class AbstractMonitorCallable extends AbstractObject
      */
     public function __invoke(MonitorStageAction $action)
     {
-        $this->modem = $action->getModem();
+        $this->manager = $action->getModemManager();
+        $this->modem = $action->getModemEntity();
         $this->logger = $action->getLogger();
 
         if (! $this->waitStage() && ! $this->waitModem()) {
 
             try {
-                $this->execute();
+                if ($this->execute()) {
+                    sleep(2); // Impede sobrecarga do gateway e do servidor local.
+                }
             } catch (\Exception $exception) {
                 $this->logger->logException($exception);
             }

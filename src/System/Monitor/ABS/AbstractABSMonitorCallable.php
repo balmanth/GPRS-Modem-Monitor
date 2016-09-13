@@ -23,14 +23,21 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
      *
      * @var int
      */
-    const MAX_READING_RETRY = 60;
+    const MAX_READING_RETRY = 18;
 
     /**
      * Quantidade máxima de tentativas de escrita de uma mensagem Modbus.
      *
      * @var int
      */
-    const MAX_WRITING_RETRY = 60;
+    const MAX_WRITING_RETRY = 18;
+
+    /**
+     * Tempo para o modo de espera das tentativas subsequentes.
+     *
+     * @var int
+     */
+    const MAX_RETRY_SLEEP = 5;
 
     /**
      * Instância da conexão com o modem.
@@ -51,22 +58,25 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
      *
      * @param string $operation
      *            Nome da operação.
-     * @param int $maxTry
+     * @param int $maxtry
      *            Quantidade máxima de tentativas da operação.
      * @return void
      */
-    private function updateRetry(string $operation, int $maxTry)
+    private function updateRetry(string $operation, int $maxtry)
     {
         $configKey = 'response.' . $operation . '.try';
         $retries = (int) $this->modem->getData($configKey);
 
-        if ($retries < $maxTry) {
+        if ($retries < $maxtry) {
+
+            $this->sleepModem(self::MAX_RETRY_SLEEP, false);
             ++ $retries;
         } else {
 
-            $retries = 0;
+            $this->logger->logNotice('max of %d retries for %s (%d seconds), go to next stage', $maxtry, $operation,
+                (self::MAX_RETRY_SLEEP * $maxtry));
 
-            $this->logger->logNotice('max of retries for %s, go to next stage', $operation);
+            $retries = 0;
             $this->modem->nextStage();
         }
 
@@ -76,46 +86,48 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
     /**
      * Tenta enviar dados ao modem.
      *
-     * @return void
+     * @return bool
      */
-    private function tryWrite()
+    private function tryWrite(): bool
     {
         if (! $this->connection->canWrite()) {
             $this->updateRetry('write', self::MAX_WRITING_RETRY);
-            return;
+            return false;
         }
 
         if (! $this->writeCommand()) {
             $this->modem->nextStage();
-            return;
+            return false;
         }
 
         $this->modem->setStageData('response.waiting', true);
+        return true;
     }
 
     /**
      * Tenta receber e processar dados do modem.
      *
-     * @return void
+     * @return bool
      */
-    private function tryRead()
+    private function tryRead(): bool
     {
         if (! $this->connection->canRead()) {
             $this->updateRetry('read', self::MAX_READING_RETRY);
-            return;
+            return false;
         }
 
         if (! $this->readResponse()) {
             $this->sleepModem(10);
-            return;
+            return false;
         }
 
         $this->modem->setStageData('response.waiting', false);
         $this->modem->nextStage();
+        return true;
     }
 
     /**
-     * Checa se o configuração de sinal foi definida.
+     * Checa se a configuração de sinal foi definida.
      *
      * @return bool
      */
@@ -210,13 +222,13 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
      *
      * @see GPRS\System\Monitor\AbstractMonitorCallable::execute()
      */
-    protected function execute()
+    protected function execute(): bool
     {
         if (! (bool) $this->modem->getStageData('response.waiting')) {
-            $this->tryWrite();
-        } else {
-            $this->tryRead();
+            return $this->tryWrite();
         }
+
+        return $this->tryRead();
     }
 
     /**
@@ -235,7 +247,6 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
      */
     public function __invoke(MonitorStageAction $action)
     {
-        $this->modem = $action->getModem();
         $this->connection = $action->getConnection();
 
         parent::__invoke($action);

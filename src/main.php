@@ -40,4 +40,5 @@ $monitors->register('ABS\\ABSModemMonitor');
 while (true) {
 
     $monitors->monitore();
+    usleep(100000); // 0.1 segundo (Impede sobrecarga)
 }

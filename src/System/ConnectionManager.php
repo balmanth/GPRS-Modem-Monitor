@@ -54,6 +54,31 @@ final class ConnectionManager extends AbstractObject
     private $pending;
 
     /**
+     * Lista de clientes de conexão com problemas.
+     *
+     * @var array
+     */
+    private $holding;
+
+    /**
+     * Inicia uma tentativa de conexão.
+     *
+     * @param ClientStream $connection
+     *            Instância da conexão.
+     */
+    private function connect(ClientStream $connection)
+    {
+        try {
+            $connection->connect();
+            sleep(2);
+        } catch (AbstractException $exception) {
+
+            $this->holding[$address] = (time() + 300);
+            $this->logger->logException($exception);
+        }
+    }
+
+    /**
      * Cria uma nova conexão.
      *
      * @param string $host
@@ -71,8 +96,7 @@ final class ConnectionManager extends AbstractObject
         $connection->setWriteTimeout(self::COMMUNICATION_TIME);
         $connection->setReadTimeout(self::COMMUNICATION_TIME);
 
-        $connection->connect();
-
+        $this->connect($connection);
         return $connection;
     }
 
@@ -90,7 +114,19 @@ final class ConnectionManager extends AbstractObject
         }
 
         $this->logger->logNotice('trying new connection');
-        $connection->connect();
+        $this->connect($connection);
+    }
+
+    /**
+     * Verifica se a conexão apresentou problemas e esta em modo de espera.
+     *
+     * @param string $address
+     *            Endereço do cliente de conexão.
+     * @return bool
+     */
+    private function isHolding(string $address): bool
+    {
+        return (isset($this->holding[$address]) && time() < $this->holding[$address]);
     }
 
     /**
@@ -135,6 +171,7 @@ final class ConnectionManager extends AbstractObject
         $this->logger = $logger;
         $this->connections = [];
         $this->pending = [];
+        $this->holding = [];
     }
 
     /**
@@ -153,23 +190,21 @@ final class ConnectionManager extends AbstractObject
     {
         $address = sprintf('%s:%d', $host, $port);
 
-        try {
+        if ($this->isHolding($address)) {
+            return NULL;
+        }
 
-            if (! isset($this->connections[$address])) {
+        if (! isset($this->connections[$address])) {
 
-                $this->connections[$address] = $this->create($host, $port);
-                $this->pending[$address] = true;
-            }
+            $this->connections[$address] = $this->create($host, $port);
+            $this->pending[$address] = true;
+        }
 
-            $connection = $this->connections[$address];
-            $this->logger->setConnection($connection);
+        $connection = $this->connections[$address];
+        $this->logger->setConnection($connection);
 
-            if (! $this->isReady($connection, $this->pending[$address])) {
-                $connection = NULL;
-            }
-        } catch (AbstractException $exception) {
-
-            $this->logger->logException($exception);
+        if (! $this->isReady($connection, $this->pending[$address])) {
+            $connection = NULL;
         }
 
         $this->logger->setConnection(NULL);

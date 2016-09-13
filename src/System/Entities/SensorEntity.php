@@ -80,11 +80,18 @@ final class SensorEntity extends AbstractObject
     private $data;
 
     /**
-     * Instância do manipulador de informações do modem.
+     * Intervalo de tempo (em segundos) para o reset do valor atual sensor.
      *
-     * @var ModemEntity
+     * @var int
      */
-    private $modem;
+    private $resetInterval;
+
+    /**
+     * Timestamp do último reset.
+     *
+     * @var int
+     */
+    private $lastResetTime;
 
     /**
      * Atualiza as informações de conversão do sensor.
@@ -95,26 +102,23 @@ final class SensorEntity extends AbstractObject
      */
     private function updateConversion(array &$conversions)
     {
-        $conversionId = $this->data['conversion_id'];
-        $resetInterval = (isset($conversions[$conversionId]) ? $conversions[$conversionId]->getResetTime() : 0);
+        $convId = $this->data['conversion_id'];
 
-        $this->data['reset_time'] = $resetInterval;
+        $this->resetInterval = (isset($conversions[$convId]) ? $conversions[$convId]->getResetTime() : 0);
     }
 
     /**
      * Construtor.
      *
-     * @param ModemEntity $modem
-     *            Instância do manipulador de informações do modem.
      * @param array $data
      *            Informações do sensor.
      * @param array $conversions
      *            Lista de manipuladores das informações de conversão.
      */
-    public function __construct(ModemEntity $modem, array &$data, array &$conversions)
+    public function __construct(array &$data, array &$conversions)
     {
-        $this->modem = $modem;
         $this->data = $data;
+        $this->lastResetTime = time();
 
         $this->updateConversion($conversions);
     }
@@ -143,17 +147,17 @@ final class SensorEntity extends AbstractObject
     public function needReset(): bool
     {
         // Intervalo de reset não definido.
-        if (($resetInterval = (int) $this->data['reset_time']) === 0) {
+        if ($this->resetInterval === 0) {
             return false;
         }
 
         // Data e Hora do último reset corresponde a Data e Hora atual.
-        if (date('YmdH', (int) $this->data['last_reset_date']) === date('YmdH')) {
+        if (date('YmdH', $this->lastResetTime) === date('YmdH')) {
             return false;
         }
 
         // O minuto de reset esta no intervalo de zero (minuto exato) a 3 (tolerância)
-        return ((int) ((time() % $resetInterval) / 60) < 3);
+        return ((int) ((time() % $this->resetInterval) / 60) < 3);
     }
 
     /**
@@ -163,7 +167,7 @@ final class SensorEntity extends AbstractObject
      */
     public function updateResetDate()
     {
-        $this->data['last_reset_date'] = time();
+        $this->lastResetTime = time();
     }
 
     /**

@@ -59,8 +59,10 @@ final class ResetTotalizersAction extends AbstractABSMonitorCallable
 
             if (isset($channels[$type])) {
 
+                $index = (8 - $sensor->getIndex());
+
+                $channels[$type][$index] = '1';
                 $sensors[] = $sensor;
-                $channels[$type][(8 - $sensor->getIndex())] = '1';
             }
         }
 
@@ -136,7 +138,10 @@ final class ResetTotalizersAction extends AbstractABSMonitorCallable
 
             foreach ($sensors as $sensor) {
 
-                $this->logger->logInfo('channel: %s reset', $sensor->getIndex());
+                $type = self::SENSOR_TYPE_NAME[$sensor->getType()];
+                $index = $sensor->getIndex();
+
+                $this->logger->logInfo('channel: %s reset index %d', $type, $index);
                 $sensor->updateResetDate();
             }
         }

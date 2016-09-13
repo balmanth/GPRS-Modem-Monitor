@@ -31,16 +31,9 @@ abstract class AbstractMonitorBase extends AbstractObject
     /**
      * Tipo de modems do monitor.
      *
-     * @var array
+     * @var int
      */
     private $type;
-
-    /**
-     * Instância do gerenciador de modems.
-     *
-     * @var ModemManagerInterface
-     */
-    private $modems;
 
     /**
      * Instância do gerenciador de registros.
@@ -57,6 +50,20 @@ abstract class AbstractMonitorBase extends AbstractObject
     private $connections;
 
     /**
+     * Lista de manipuladores das informações de conversão dos dados armazenados pelos sensores dos modems.
+     *
+     * @var array
+     */
+    private $conversionEntities;
+
+    /**
+     * Lista de gerenciadores de ações para as etapas de monitoramento.
+     *
+     * @var array
+     */
+    private $listeners;
+
+    /**
      * Especifica se o monitor esta ou não ativado.
      *
      * @var boolean
@@ -69,6 +76,13 @@ abstract class AbstractMonitorBase extends AbstractObject
      * @var int
      */
     private $lastUpdate;
+
+    /**
+     * Instância do gerenciador de modems.
+     *
+     * @var ModemManagerInterface
+     */
+    private $modemManager;
 
     /**
      * Lista de manipuladores das informações dos modems.
@@ -85,27 +99,13 @@ abstract class AbstractMonitorBase extends AbstractObject
     private $modemStages;
 
     /**
-     * Lista de manipuladores das informações de conversão dos dados armazenados pelos sensores dos modems.
-     *
-     * @var array
-     */
-    private $conversionEntities;
-
-    /**
-     * Lista de gerenciadores de ações para as etapas de monitoramento.
-     *
-     * @var array
-     */
-    private $listeners;
-
-    /**
      * Atualiza a lista de informações de conversão.
      *
      * @return void
      */
     private function updateConversionList()
     {
-        $response = $this->modems->loadConversions();
+        $response = $this->modemManager->loadConversions();
         $updated = 0;
         $loaded = 0;
 
@@ -132,7 +132,7 @@ abstract class AbstractMonitorBase extends AbstractObject
      */
     private function updateModemList()
     {
-        $response = $this->modems->loadModems($this->type);
+        $response = $this->modemManager->loadModems($this->type);
         $updated = 0;
         $loaded = 0;
 
@@ -195,31 +195,37 @@ abstract class AbstractMonitorBase extends AbstractObject
     }
 
     /**
+     * Construtor.
      *
-     * {@inheritDoc}
-     *
-     * @see GPRS\System\Monitor\MonitorInterface::__construct($modems, $logger, $connections)
+     * @param ModemManagerInterface $modems
+     *            Instância do gerenciador de modems.
+     * @param LogManager $logger
+     *            Instância do gerenciador de registros.
+     * @param ConnectionManager $connections
+     *            Instância do gerenciador de conexões.
+     * @param int $type
+     *            Tipo de modem.
      */
     public function __construct(ModemManagerInterface $modems, LogManager $logger, ConnectionManager $connections,
         int $type)
     {
         $this->type = $type;
-        $this->modems = $modems;
         $this->logger = $logger;
         $this->connections = $connections;
-        $this->actived = true;
-        $this->lastUpdate = 0;
-        $this->modemEntities = [];
-        $this->modemStages = [];
         $this->conversionEntities = [];
         $this->listeners = [];
+        $this->actived = true;
+        $this->lastUpdate = 0;
+
+        $this->modemManager = $modems;
+        $this->modemEntities = [];
+        $this->modemStages = [];
     }
 
     /**
+     * Ativa o monitor.
      *
-     * {@inheritDoc}
-     *
-     * @see GPRS\System\Monitor\MonitorInterface::active()
+     * @return void
      */
     public function active()
     {
@@ -227,10 +233,9 @@ abstract class AbstractMonitorBase extends AbstractObject
     }
 
     /**
+     * Desativa o monitor.
      *
-     * {@inheritDoc}
-     *
-     * @see GPRS\System\Monitor\MonitorInterface::deactive()
+     * @return void
      */
     public function deactive()
     {
@@ -238,10 +243,9 @@ abstract class AbstractMonitorBase extends AbstractObject
     }
 
     /**
+     * Monitora os modems da lista de acordo com a etapa atual de cada modem.
      *
-     * {@inheritDoc}
-     *
-     * @see GPRS\System\Monitor\MonitorInterface::monitore()
+     * @return void
      */
     public function monitore()
     {
@@ -260,21 +264,38 @@ abstract class AbstractMonitorBase extends AbstractObject
                 continue;
             }
 
-            // Impede sobrecarga do gateway e do servidor local.
-            sleep(1);
-
-            $this->logger->setModem($modemEntity);
+            $this->logger->setModemEntity($modemEntity);
             $this->logger->setConnection($connection);
 
             // OBS: A ação pode ser armazenada no modem, evitando criar várias instâncias desnecessárias.
-            $action = new MonitorStageAction($this, $this->logger, $modemEntity, $connection);
+            $action = new MonitorStageAction($this, $modemEntity, $connection);
             $listenerIndex = $listenerKeys[($this->modemStages[$id] % $listenerCount)];
 
             $modemEntity->setMaxStage($listenerCount);
             $this->listeners[$listenerIndex]->execute($action);
 
-            $this->logger->setModem(NULL);
+            $this->logger->setModemEntity(NULL);
             $this->logger->setConnection(NULL);
         }
+    }
+
+    /**
+     * Obtém a instância do gerenciador de registros.
+     *
+     * @return LogManager
+     */
+    public function getLogger(): LogManager
+    {
+        return $this->logger;
+    }
+
+    /**
+     * Obtém a instância do gerenciador de modems.
+     *
+     * @return ModemManagerInterface
+     */
+    public function getModemManager(): ModemManagerInterface
+    {
+        return $this->modemManager;
     }
 }

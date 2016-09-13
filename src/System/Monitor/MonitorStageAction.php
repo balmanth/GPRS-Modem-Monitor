@@ -3,8 +3,9 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor;
 
 use BCL\System\Actions\AbstractAction;
-use BCL\System\Logger\LogManager;
 use BCL\System\Streams\Network\ClientStream;
+use GPRS\System\ModemManagerInterface;
+use GPRS\System\LogManager;
 use GPRS\System\Entities\ModemEntity;
 
 /**
@@ -20,18 +21,11 @@ final class MonitorStageAction extends AbstractAction
 {
 
     /**
-     * Instância do gerenciador de registros.
-     *
-     * @var LogManager
-     */
-    private $log;
-
-    /**
      * Instância da entidade com informações do modem.
      *
      * @var ModemEntity
      */
-    private $modem;
+    private $modemEntity;
 
     /**
      * Instância do stream de conexão.
@@ -45,21 +39,27 @@ final class MonitorStageAction extends AbstractAction
      *
      * @param AbstractMonitorBase $monitor
      *            Instância do monitor do modem.
-     * @param LogManager $log
-     *            Instância do gerenciador de registros.
-     * @param ModemEntity $modem
+     * @param ModemEntity $modemEntity
      *            Instância da entidade com informações do modem.
      * @param ClientStream $connection
      *            Instância do stream de conexão.
      */
-    public function __construct(AbstractMonitorBase $monitor, LogManager $log, ModemEntity $modem,
-        ClientStream $connection)
+    public function __construct(AbstractMonitorBase $monitor, ModemEntity $modemEntity, ClientStream $connection)
     {
         parent::__construct($monitor);
 
-        $this->log = $log;
-        $this->modem = $modem;
+        $this->modemEntity = $modemEntity;
         $this->connection = $connection;
+    }
+
+    /**
+     * Obtém a instância do gerenciador de modems.
+     *
+     * @return ModemManagerInterface
+     */
+    public function getModemManager(): ModemManagerInterface
+    {
+        return $this->actionSender->getModemManager();
     }
 
     /**
@@ -69,7 +69,7 @@ final class MonitorStageAction extends AbstractAction
      */
     public function getLogger(): LogManager
     {
-        return $this->log;
+        return $this->actionSender->getLogger();
     }
 
     /**
@@ -77,9 +77,9 @@ final class MonitorStageAction extends AbstractAction
      *
      * @return ModemEntity
      */
-    public function getModem(): ModemEntity
+    public function getModemEntity(): ModemEntity
     {
-        return $this->modem;
+        return $this->modemEntity;
     }
 
     /**

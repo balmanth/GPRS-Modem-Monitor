@@ -63,7 +63,7 @@ final class ModemEntity extends AbstractObject
         foreach ($this->data['sensors'] as $index => $data) {
 
             if (! isset($this->sensors[$index])) {
-                $this->sensors[$index] = new SensorEntity($this, $data, $conversions);
+                $this->sensors[$index] = new SensorEntity($data, $conversions);
             } else {
                 $this->sensors[$index]->update($data, $conversions);
             }
@@ -202,6 +202,16 @@ final class ModemEntity extends AbstractObject
     public function getStage(): int
     {
         return $this->stage;
+    }
+
+    /**
+     * Obtém o Id único do modem.
+     *
+     * @return int
+     */
+    public function getId(): int
+    {
+        return (int) $this->data['id'];
     }
 
     /**

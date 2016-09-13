@@ -31,7 +31,7 @@ final class MonitorManager extends AbstractObject
     private $logger;
 
     /**
-     * Instância do gerenciador de conexões ativas.
+     * Instância do gerenciador de conexões.
      *
      * @var ConnectionManager
      */
@@ -66,7 +66,7 @@ final class MonitorManager extends AbstractObject
      * Adiciona um monitor à lista de monitores.
      *
      * @param $className $monitor
-     *            Nome da classe do monitor.
+     *            Classe do monitor.
      * @throws \Exception
      * @return void
      */

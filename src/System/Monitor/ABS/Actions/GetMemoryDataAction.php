@@ -17,6 +17,18 @@ final class GetMemoryDataAction extends AbstractABSMonitorCallable
 {
 
     /**
+     * Obtém o estado dos canais de um único tipo.
+     *
+     * @param string $type
+     *            Tipo de canal.
+     * @return string String com 8 caracteres entre '0' e '1' (1 = Habilitado; 0 = Desabilitado).
+     */
+    private function getChannelStates(string $type): string
+    {
+        return strrev($this->modem->getData('modem.channel.' . $type));
+    }
+
+    /**
      * Avança o índice de leitura do modem.
      *
      * @return void
@@ -71,7 +83,20 @@ final class GetMemoryDataAction extends AbstractABSMonitorCallable
         $this->logger->logInfo('data index: %05d, data time: %s, data status: %05d', $index,
             date('Y/m/d H:i:s', $time), $status);
 
-        $this->nextIndex();
+        $channels = [
+            'A1' => $this->getChannelStates('A1'),
+            'A2' => $this->getChannelStates('A2'),
+            'PF' => $this->getChannelStates('PF'),
+            'PC' => $this->getChannelStates('PC'),
+            'TC' => $this->getChannelStates('TC'),
+            'TZ' => $this->getChannelStates('TZ')
+        ];
+
+        if ($this->manager->addModemData($this->modem, $channels, $index, $status, $time, $values)) {
+
+            $this->logger->logNotice('record index written: %05d', $index);
+            $this->nextIndex();
+        }
     }
 
     /**

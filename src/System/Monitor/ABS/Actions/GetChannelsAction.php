@@ -17,27 +17,23 @@ final class GetChannelsAction extends AbstractABSMonitorCallable
 {
 
     /**
-     * Atualiza as informações sobre um canal.
+     * Atualiza as informações sobre os canais de um único tipo.
      *
-     * @param string $channel
-     *            Nome do canal atualizado.
+     * @param string $type
+     *            Tipo de canal.
      * @param int $states
-     *            Estados das entradas/saídas (8 bits onde cada bit representa: 1 = Habilitado, 0 = Desabilitado)
+     *            Estados dos canais (8 bits onde cada bit representa: 1 = Habilitado, 0 = Desabilitado)
      * @return void
      */
-    private function updateChannel(string $channel, int $states)
+    private function updateChannelStates(string $type, int $states)
     {
-        $configKey = 'modem.channel.' . $channel;
+        $configKey = 'modem.channel.' . $type;
         $newStates = substr('00000000' . decbin($states & 0xFF), - 8);
-
-        if ($newStates[0] === '0') {
-            $newStates = strrev($newStates);
-        }
 
         // Estados do canal modificados.
         if ($this->modem->getData($configKey) !== $newStates) {
 
-            $this->logger->logInfo('channel: %s, states: %s', $channel, $newStates);
+            $this->logger->logInfo('channel: %s, states: %s', $type, $newStates);
             $this->modem->setData($configKey, $newStates);
         }
     }
@@ -72,12 +68,12 @@ final class GetChannelsAction extends AbstractABSMonitorCallable
 
         $data = &$response['data'];
 
-        $this->updateChannel('A1', $data[1]); // Entrada analógica 1-8
-        $this->updateChannel('A2', $data[2]); // Entrada analógica 9-16
-        $this->updateChannel('PF', $data[3]); // Frequência de pulso
-        $this->updateChannel('PC', $data[4]); // Totalizador de pulso
-        $this->updateChannel('TC', $data[5]); // Totalizador de tempo
-        $this->updateChannel('TZ', $data[6]); // Totalizador de valor analógico
+        $this->updateChannelStates('A1', $data[1]); // Entrada analógica 1-8
+        $this->updateChannelStates('A2', $data[2]); // Entrada analógica 9-16
+        $this->updateChannelStates('PF', $data[3]); // Frequência de pulso
+        $this->updateChannelStates('PC', $data[4]); // Totalizador de pulso
+        $this->updateChannelStates('TC', $data[5]); // Totalizador de tempo
+        $this->updateChannelStates('TZ', $data[6]); // Totalizador de valor analógico
 
         $this->modem->setData('modem.channels', true);
         $this->sleepStage(600); // Próxima execução em 10min.
