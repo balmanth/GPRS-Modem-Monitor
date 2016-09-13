@@ -118,9 +118,9 @@ final class SensorEntity extends AbstractObject
     public function __construct(array &$data, array &$conversions)
     {
         $this->data = $data;
-        $this->lastResetTime = time();
 
         $this->updateConversion($conversions);
+        $this->updateResetDate();
     }
 
     /**
@@ -151,13 +151,13 @@ final class SensorEntity extends AbstractObject
             return false;
         }
 
-        // Data e Hora do último reset corresponde a Data e Hora atual.
-        if (date('YmdH', $this->lastResetTime) === date('YmdH')) {
+        // A diferença entre o último reset e o tempo atual esta dentro do intervalo de espera.
+        if ((time() - $this->lastResetTime) < $this->resetInterval) {
             return false;
         }
 
-        // O minuto de reset esta no intervalo de zero (minuto exato) a 3 (tolerância)
-        return ((int) ((time() % $this->resetInterval) / 60) < 3);
+        // Tolerância de 180 segundos na verificação do tempo de reset.
+        return ((time() % $this->resetInterval) < 180);
     }
 
     /**
@@ -167,7 +167,9 @@ final class SensorEntity extends AbstractObject
      */
     public function updateResetDate()
     {
-        $this->lastResetTime = time();
+        if ($this->resetInterval > 0) {
+            $this->lastResetTime = (time() - (time() % $this->resetInterval));
+        }
     }
 
     /**

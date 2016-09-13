@@ -76,7 +76,7 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
 
             if (isset($channels[$type])) {
 
-                $index = (8 - $sensor->getIndex());
+                $index = (7 - $sensor->getIndex());
 
                 $channels[$type][$index] = '1';
                 $sensors[] = $sensor;
@@ -84,6 +84,7 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
         }
 
         $this->modem->setData('modem.reset.sensors', $sensors);
+
         return $channels;
     }
 
