@@ -200,7 +200,7 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
             return true;
         }
 
-        $this->logger->logRead('failed on read %d of %d bytes, try again', strlen($message), $length);
+        $this->logger->logRead('failed on read %d of %d expected bytes, try again', strlen($message), $length);
         return false;
     }
 
