@@ -48,11 +48,11 @@ final class ABSMonitor extends AbstractMonitorBase
     const DATALOGGER_GET_CHANNELS = 2003;
 
     /**
-     * Reinicia os totalizadores.
+     * Reinicia o valor armazenado nos totalizadores.
      *
      * @var int
      */
-    const DATALOGGER_RESET_TOTALIZERS = 2004;
+    const DATALOGGER_CLEAR_TOTALIZERS = 2004;
 
     /**
      * Obtém as informações de memória.
@@ -90,7 +90,7 @@ final class ABSMonitor extends AbstractMonitorBase
         $this->addListener(self::DATALOGGER_GET_CHANNELS)
             ->attach(new Actions\GetChannelsAction());
 
-        $this->addListener(self::DATALOGGER_RESET_TOTALIZERS)
+        $this->addListener(self::DATALOGGER_CLEAR_TOTALIZERS)
             ->attach(new Actions\ClearTotalizersAction());
 
         $this->addListener(self::DATALOGGER_GET_MEMORY_INFO)

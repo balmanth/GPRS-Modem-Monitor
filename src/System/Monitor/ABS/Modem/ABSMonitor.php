@@ -55,11 +55,11 @@ final class ABSMonitor extends AbstractMonitorBase
     const MODEM_GET_CHANNELS = 1004;
 
     /**
-     * Reinicia os totalizadores.
+     * Reinicia o valor armazenado nos totalizadores.
      *
      * @var int
      */
-    const MODEM_RESET_TOTALIZERS = 1005;
+    const MODEM_CLEAR_TOTALIZERS = 1005;
 
     /**
      * Obtém as informações de memória.
@@ -100,7 +100,7 @@ final class ABSMonitor extends AbstractMonitorBase
         $this->addListener(self::MODEM_GET_CHANNELS)
             ->attach(new Actions\GetChannelsAction());
 
-        $this->addListener(self::MODEM_RESET_TOTALIZERS)
+        $this->addListener(self::MODEM_CLEAR_TOTALIZERS)
             ->attach(new Actions\ClearTotalizersAction());
 
         $this->addListener(self::MODEM_GET_MEMORY_INFO)
