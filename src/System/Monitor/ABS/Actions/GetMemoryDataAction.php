@@ -54,7 +54,7 @@ final class GetMemoryDataAction extends AbstractABSMonitorCallable
         if ((int) $this->modem->getData('modem.memory.corruptBlock') !== $index) {
 
             $this->modem->setData('modem.memory.corruptBlock', $index);
-            $this->logger->logInfo('data index: %05d corrupted', $index);
+            $this->logger->logInfo('data index: %05d corrupted or written pending', $index);
 
             $this->sleepStage(600); // Próxima execução em 10min.
         } else {
