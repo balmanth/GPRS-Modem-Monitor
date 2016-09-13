@@ -78,7 +78,7 @@ final class GetSignalQualityAction extends AbstractABSMonitorCallable
                 $this->logger->logInfo('signal quality: %0.2f%% (%ddBm)', $percent, $signal);
             }
 
-            $this->sleepStage(60); // Próxima execução em 1min.
+            $this->sleepStage(180); // Próxima execução em 3min.
         }
 
         return true;
