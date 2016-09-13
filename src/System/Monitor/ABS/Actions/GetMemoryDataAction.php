@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS\Actions;
 
-use GPRS\System\Monitor\ABS\AbstractABSMonitorCallable;
+use GPRS\System\Monitor\ABS\AbstractABSMonitorAction;
 
 /**
  * Obtém dados da memória do modem.
@@ -13,7 +13,7 @@ use GPRS\System\Monitor\ABS\AbstractABSMonitorCallable;
  * @copyright Silas B. Domingos
  * @package GPRS\System\Monitor\ABS\Actions
  */
-final class GetMemoryDataAction extends AbstractABSMonitorCallable
+final class GetMemoryDataAction extends AbstractABSMonitorAction
 {
 
     /**
@@ -118,7 +118,7 @@ final class GetMemoryDataAction extends AbstractABSMonitorCallable
      *
      * {@inheritDoc}
      *
-     * @see GPRS\System\Monitor\AbstractABSMonitorCallable::writeCommand()
+     * @see GPRS\System\Monitor\AbstractABSMonitorAction::writeCommand()
      */
     protected function writeCommand(): bool
     {
@@ -143,7 +143,7 @@ final class GetMemoryDataAction extends AbstractABSMonitorCallable
      *
      * {@inheritDoc}
      *
-     * @see GPRS\System\Monitor\AbstractABSMonitorCallable::readResponse()
+     * @see GPRS\System\Monitor\AbstractABSMonitorAction::readResponse()
      */
     protected function readResponse(): bool
     {

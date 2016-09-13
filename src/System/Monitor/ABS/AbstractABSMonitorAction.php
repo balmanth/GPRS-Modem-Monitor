@@ -15,7 +15,7 @@ use GPRS\System\Monitor\MonitorStageAction;
  * @copyright Silas B. Domingos
  * @package GPRS\System\Monitor\ABS
  */
-abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
+abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
 {
 
     /**
@@ -77,6 +77,9 @@ abstract class AbstractABSMonitorCallable extends AbstractMonitorCallable
                 (self::MAX_RETRY_SLEEP * $maxtry));
 
             $retries = 0;
+
+            // Desativa a espera pela resposta (se a operação for leitura) e avança para a próxima etapa.
+            $this->modem->setStageData('response.waiting', false);
             $this->modem->nextStage();
         }
 

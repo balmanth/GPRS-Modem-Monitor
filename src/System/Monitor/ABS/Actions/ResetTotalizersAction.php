@@ -2,8 +2,8 @@
 declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS\Actions;
 
+use GPRS\System\Monitor\ABS\AbstractABSMonitorAction;
 use GPRS\System\Entities\SensorEntity;
-use GPRS\System\Monitor\ABS\AbstractABSMonitorCallable;
 
 /**
  * Reinicia os totalizadores do modem.
@@ -14,7 +14,7 @@ use GPRS\System\Monitor\ABS\AbstractABSMonitorCallable;
  * @copyright Silas B. Domingos
  * @package GPRS\System\Monitor\ABS\Actions
  */
-final class ResetTotalizersAction extends AbstractABSMonitorCallable
+final class ResetTotalizersAction extends AbstractABSMonitorAction
 {
 
     /**
@@ -97,7 +97,7 @@ final class ResetTotalizersAction extends AbstractABSMonitorCallable
      *
      * {@inheritDoc}
      *
-     * @see GPRS\System\Monitor\AbstractABSMonitorCallable::writeCommand()
+     * @see GPRS\System\Monitor\AbstractABSMonitorAction::writeCommand()
      */
     protected function writeCommand(): bool
     {
@@ -124,7 +124,7 @@ final class ResetTotalizersAction extends AbstractABSMonitorCallable
      *
      * {@inheritDoc}
      *
-     * @see GPRS\System\Monitor\AbstractABSMonitorCallable::readResponse()
+     * @see GPRS\System\Monitor\AbstractABSMonitorAction::readResponse()
      */
     protected function readResponse(): bool
     {
