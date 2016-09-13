@@ -29,7 +29,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *
      * @var ModemEntity
      */
-    private $modem;
+    private $modemEntity;
 
     /**
      * Conexão do registro.
@@ -46,15 +46,15 @@ final class LogManager extends \BCL\System\Logger\LogManager
     private $message;
 
     /**
-     * Define a instância do modem relacionado ao registro.
+     * Define a instância da entidade com as informações do modem relacionado ao registro.
      *
-     * @param ModemEntity|NULL $modem
+     * @param ModemEntity|NULL $modemEntity
      *            Instância do modem ou Null para desassociar o modem atual.
      * @return void
      */
-    public function setModem($modem)
+    public function setModemEntity($modemEntity)
     {
-        $this->modem = $modem;
+        $this->modemEntity = $modemEntity;
     }
 
     /**
@@ -78,7 +78,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      */
     public function log(...$params)
     {
-        $stage = (isset($this->modem) ? $this->modem->getStage() : - 1);
+        $stage = (isset($this->modemEntity) ? $this->modemEntity->getStage() : - 1);
         $address = isset($this->connection) ? $this->connection->getAddress() : 'none';
         $message = (isset($this->message) ? vsprintf('\'' . $this->message . '\'', $params) : '');
 
@@ -145,7 +145,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      */
     public function logConnection(string $message = NULL, ...$params)
     {
-        $this->command = 'CONENCTION';
+        $this->command = 'CONNECTION';
         $this->message = $message;
 
         $this->log(...$params);
@@ -183,6 +183,25 @@ final class LogManager extends \BCL\System\Logger\LogManager
         $this->message = $message;
 
         $this->log(...$params);
+    }
+
+    /**
+     * Registra uma atividade que originou um erro.
+     *
+     * @param int $errCode
+     *            Código de erro.
+     * @param string $errMessage
+     *            Mensagem de erro.
+     * @param string $operation
+     *            Descrição da operação envolvida.
+     * @return void
+     */
+    public function logError(int $errCode, string $errMessage, string $operation)
+    {
+        $this->command = 'ERROR';
+        $this->message = 'code: %d, operation: "%s" message: "%s"';
+
+        $this->log($errCode, $errMessage);
     }
 
     /**
