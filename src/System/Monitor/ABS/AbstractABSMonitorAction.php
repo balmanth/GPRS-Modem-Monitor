@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS;
 
-use BCL\System\Streams\Network\ClientStream;
+use GPRS\System\Connection;
 use GPRS\System\Monitor\AbstractMonitorCallable;
 use GPRS\System\Monitor\MonitorStageAction;
 
@@ -40,9 +40,9 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     const MAX_RETRY_SLEEP = 5;
 
     /**
-     * Instância da conexão com o modem.
+     * Instância da conexão.
      *
-     * @var ClientStream
+     * @var Connection
      */
     private $connection;
 
@@ -143,24 +143,7 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
      */
     protected function writeMessage(string $message): bool
     {
-        $length = strlen($message);
-        $bytes = $this->connection->write($message);
-
-        if ($bytes === $length) {
-
-            $this->logger->logData($message);
-            $this->logger->logWrite('success');
-
-            return true;
-        }
-
-        if ($bytes > 0) {
-            $this->logger->logWrite('failed on write %d of %d bytes, try next', $bytes, $length);
-        } else {
-            $this->logger->logWrite('failed, try next');
-        }
-
-        return false;
+        return $this->connection->writeMessage($message);
     }
 
     /**
@@ -181,19 +164,14 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
      */
     protected function readMessage(int $address, int $func, int $length, &$response, string $mask = NULL): bool
     {
-        $message = $this->connection->read($length);
+        $message = '';
 
-        if (isset($message{($length - 1)})) {
-
-            $this->logger->logData($message);
+        if ($this->connection->readMessage($message, $length)) {
 
             $response = $this->modbus->unpack($message, $address, $func, $mask);
-            $this->logger->logRead('success');
-
             return true;
         }
 
-        $this->logger->logRead('failed on read %d of %d expected bytes, try again', strlen($message), $length);
         return false;
     }
 

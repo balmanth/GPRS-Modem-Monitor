@@ -2,7 +2,6 @@
 declare(strict_types = 1);
 namespace GPRS\System;
 
-use BCL\System\Streams\Network\ClientStream;
 use GPRS\System\Entities\ModemEntity;
 use GPRS\System\Monitor\AbstractMonitorBase;
 
@@ -28,7 +27,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
     /**
      * Instância da conexão associada ao registro.
      *
-     * @var ClientStream
+     * @var Connection
      */
     private $connection;
 
@@ -68,7 +67,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
     /**
      * Define a instância da conexão associada ao registro.
      *
-     * @param ClientStream|NULL $connection
+     * @param Connection|NULL $connection
      *            Instância da conexão ou Null para desassociar a conexão atual.
      * @return void
      */

@@ -274,7 +274,7 @@ abstract class AbstractMonitorBase extends AbstractObject
 
         foreach ($this->modemEntities as $id => $modemEntity) {
 
-            if (($connection = $this->connections->get($modemEntity->getHost(), $modemEntity->getPort())) === NULL) {
+            if (($connection = $this->connections->getConnection($modemEntity)) === NULL) {
                 continue;
             }
 

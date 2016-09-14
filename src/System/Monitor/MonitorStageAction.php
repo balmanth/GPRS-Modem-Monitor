@@ -3,9 +3,9 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor;
 
 use BCL\System\Actions\AbstractAction;
-use BCL\System\Streams\Network\ClientStream;
-use GPRS\System\ModemManagerInterface;
+use GPRS\System\Connection;
 use GPRS\System\LogManager;
+use GPRS\System\ModemManagerInterface;
 use GPRS\System\Entities\ModemEntity;
 
 /**
@@ -28,9 +28,9 @@ final class MonitorStageAction extends AbstractAction
     private $modemEntity;
 
     /**
-     * Instância do stream de conexão.
+     * Instância da conexão.
      *
-     * @var ClientStream
+     * @var Connection
      */
     private $connection;
 
@@ -41,10 +41,10 @@ final class MonitorStageAction extends AbstractAction
      *            Instância do monitor do modem.
      * @param ModemEntity $modemEntity
      *            Instância da entidade com informações do modem.
-     * @param ClientStream $connection
-     *            Instância do stream de conexão.
+     * @param Connection $connection
+     *            Instância da conexão.
      */
-    public function __construct(AbstractMonitorBase $monitor, ModemEntity $modemEntity, ClientStream $connection)
+    public function __construct(AbstractMonitorBase $monitor, ModemEntity $modemEntity, Connection $connection)
     {
         parent::__construct($monitor);
 
@@ -83,11 +83,11 @@ final class MonitorStageAction extends AbstractAction
     }
 
     /**
-     * Obtém a instância do stream de conexão com o modem.
+     * Obtém a instância da conexão com o modem.
      *
-     * @return ClientStream
+     * @return Connection
      */
-    public function getConnection(): ClientStream
+    public function getConnection(): Connection
     {
         return $this->connection;
     }
