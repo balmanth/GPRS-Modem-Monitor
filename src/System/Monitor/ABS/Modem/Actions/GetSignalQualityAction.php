@@ -53,7 +53,7 @@ final class GetSignalQualityAction extends AbstractABSMonitorAction
      */
     private function processAvailableSignal(int $signal)
     {
-        $lastPercent = (int) $this->modem->getData('modem.signal.percent');
+        $lastPercent = (float) $this->modem->getData('modem.signal.percent');
         $newPercent = ((($signal - self::MIN_DBM) / (self::MAX_DBM - self::MIN_DBM)) * 100);
 
         if ($newPercent > $lastPercent) {
