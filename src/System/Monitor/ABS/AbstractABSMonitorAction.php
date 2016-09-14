@@ -143,35 +143,6 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     }
 
     /**
-     * Recebe e processa uma mensagem do modem.
-     *
-     * @param int $address
-     *            Endereço de rede esperado.
-     * @param int $func
-     *            Código da função esperada.
-     * @param int $length
-     *            Comprimento da mensagem.
-     * @param mixed $response
-     *            Array com os dados da mensagem (Atualizado por referência
-     * @param string $mask
-     *            Máscara de formatação das informações de resposta.
-     * @return bool True quando uma resposta válida foi recebida.
-     *         False quando contrário.
-     */
-    protected function readMessage(int $address, int $func, int $length, &$response, string $mask = NULL): bool
-    {
-        $message = '';
-
-        if ($this->receiveMessage($message, $length)) {
-
-            $response = $this->modbus->unpack($message, $address, $func, $mask);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Envia um comando ao modem.
      *
      * @return bool True quando a mensagem foi enviada.
