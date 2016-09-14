@@ -18,7 +18,7 @@ Serviço para leitura de atividades registradas por um modem celular utilizado e
 * **Modem e Datalogger ABS**
   + Geral
     * Módulo para leitura das informações sobre o hardware.
-    * Módulo para limpeza dos valores acumulados nos totalizadores.
+    * Módulo para limpeza do valor acumulados nos totalizadores.
   + Relógio Interno
     * Módulo para leitura de data e hora.
     * Módulo para sincronizar data e hora.
