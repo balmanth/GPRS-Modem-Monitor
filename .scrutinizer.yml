@@ -1,0 +1,72 @@
+filter:
+    paths: ["src/*"]
+
+build:
+    environment:
+        php: 7.0.6
+checks:
+    php:
+        unused_variables: true
+        use_statement_alias_conflict: true
+        variable_existence: true
+        verify_property_names: true
+        verify_argument_usable_as_reference: true
+        verify_access_scope_valid: true
+        uppercase_constants: true
+        unreachable_code: true
+        return_in_constructor: true
+        return_doc_comments: true
+        return_doc_comment_if_not_inferrable: true
+        require_scope_for_methods: true
+        require_php_tag_first: true
+        property_assignments: true
+        php5_style_constructor: true
+        parse_doc_comments: true
+        parameter_non_unique: true
+        parameter_doc_comments: true
+        overriding_private_members: true
+        one_class_per_file: true
+        non_commented_empty_catch_block: true
+        no_unnecessary_if: true
+        no_short_open_tag: true
+        no_underscore_prefix_in_properties: true
+        no_underscore_prefix_in_methods: true
+        no_non_implemented_abstract_methods: true
+        no_property_on_interface: true
+        no_global_keyword: true
+        no_exit: true
+        no_eval: true
+        no_error_suppression: true
+        no_debug_code: true
+        no_commented_out_code: true
+        missing_arguments: true
+        method_calls_on_non_object: true
+        instanceof_class_exists: true
+        foreach_traversable: true
+        encourage_single_quotes: true
+        encourage_shallow_comparison: true
+        encourage_postdec_operator: true
+        deprecated_code_usage: true
+        comparison_always_same_result: true
+        closure_use_not_conflicting: true
+        closure_use_modifiable: true
+        classes_in_camel_caps: true
+        check_method_contracts:
+            verify_interface_like_constraints: true
+            verify_documented_constraints: true
+            verify_parent_constraints: true
+        catch_class_exists: true
+        call_to_parent_method: true
+        avoid_useless_overridden_methods: true
+        avoid_usage_of_logical_operators: true
+        avoid_todo_comments: true
+        avoid_superglobals: true
+        avoid_length_functions_in_loops: true
+        avoid_entity_manager_injection: true
+        avoid_duplicate_types: true
+        avoid_corrupting_byteorder_marks: true
+        avoid_conflicting_incrementers: true
+        avoid_closing_tag: true
+        avoid_aliased_php_functions: true
+        assignment_of_null_return: true
+        argument_type_checks: true
