@@ -125,7 +125,7 @@ abstract class AbstractGetMemoryDataAction extends AbstractABSMonitorAction
 
         // Timestamp inválido indica registro não armazenado ou com erro.
         if ($time === false) {
-            $this->processCorruptedRecord();
+            $this->processInvalidRecord();
         } else {
 
             $index = $data['v1'];
