@@ -19,7 +19,7 @@ Serviço para leitura de atividades registradas por um modem celular utilizado e
   + Geral
     * Módulo para leitura das informações sobre o hardware.
     * Módulo para limpeza do valor acumulados nos totalizadores.
-  + Relógio Interno
+  + Relógio
     * Módulo para leitura de data e hora.
     * Módulo para sincronizar data e hora.
   + Sinal
@@ -28,7 +28,6 @@ Serviço para leitura de atividades registradas por um modem celular utilizado e
     * Módulo para leitura da configuração dos canais.
   + Memória
     * Módulo para leitura das informações sobre a memória.
-    (tamanho do bloco, quantidade de blocos e índice do próximo bloco a ser gravado).
     * Módulo para leitura dos dados armazenadas na memória.
 
 ## Requisitos
