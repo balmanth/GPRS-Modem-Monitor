@@ -260,7 +260,7 @@ final class ABSModbusProtocol extends AbstractObject
      *            Endereço de rede esperado.
      * @param int $func
      *            Código da função esperada.
-     * @param string $mask
+     * @param string|NULL $mask
      *            Máscara de formatação das informações de resposta.
      * @return array
      * @throws \Exception

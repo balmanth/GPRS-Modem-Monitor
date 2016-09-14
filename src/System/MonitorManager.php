@@ -65,14 +65,14 @@ final class MonitorManager extends AbstractObject
     /**
      * Adiciona um monitor à lista de monitores.
      *
-     * @param $className $monitor
+     * @param string $className
      *            Classe do monitor.
      * @throws \Exception
      * @return void
      */
     public function register(string $className)
     {
-        $monitor = __NAMESPACE__ . "\\Monitor\\" . $className;
+        $monitor = __NAMESPACE__ . '\\Monitor\\' . $className;
 
         if (isset($this->monitors[$className])) {
 

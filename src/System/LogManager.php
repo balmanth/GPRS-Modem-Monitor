@@ -20,23 +20,30 @@ final class LogManager extends \BCL\System\Logger\LogManager
     /**
      * Instância da entidade com informações do modem associado ao registro.
      *
-     * @var ModemEntity
+     * @var ModemEntity|NULL
      */
     private $modemEntity;
 
     /**
      * Instância da conexão associada ao registro.
      *
-     * @var Connection
+     * @var Connection|NULL
      */
     private $connection;
 
     /**
      * Instância do monitor associado ao registro.
      *
-     * @var AbstractMonitorBase
+     * @var AbstractMonitorBase|NULL
      */
     private $monitor;
+
+    /**
+     * Mensagem do registro.
+     *
+     * @var string|NULL
+     */
+    private $message;
 
     /**
      * Comando do registro.
@@ -44,13 +51,6 @@ final class LogManager extends \BCL\System\Logger\LogManager
      * @var string
      */
     private $command;
-
-    /**
-     * Mensagem do registro.
-     *
-     * @var string
-     */
-    private $message;
 
     /**
      * Define a instância da entidade com as informações do modem relacionado ao registro.
@@ -114,7 +114,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Parâmetros da mensagem.
      * @return void
      */
-    public function logNotice(string $message = NULL, ...$params)
+    public function logNotice(string $message, ...$params)
     {
         $this->command = 'NOTICE';
         $this->message = $message;
@@ -131,7 +131,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Parâmetros da mensagem.
      * @return void
      */
-    public function logInfo(string $message = NULL, ...$params)
+    public function logInfo(string $message, ...$params)
     {
         $this->command = 'INFO';
         $this->message = $message;
@@ -146,7 +146,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Mensagem descritiva da atividade.
      * @return void
      */
-    public function logData(string $message = NULL)
+    public function logData(string $message)
     {
         $this->command = 'DATA';
         $this->message = strtoupper(implode('', unpack('H*', $message)));
@@ -163,7 +163,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Parâmetros da mensagem.
      * @return void
      */
-    public function logConnection(string $message = NULL, ...$params)
+    public function logConnection(string $message, ...$params)
     {
         $this->command = 'CONNECTION';
         $this->message = $message;
@@ -180,7 +180,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Parâmetros da mensagem.
      * @return void
      */
-    public function logWrite(string $message = NULL, ...$params)
+    public function logWrite(string $message, ...$params)
     {
         $this->command = 'WRITE';
         $this->message = $message;
@@ -197,7 +197,7 @@ final class LogManager extends \BCL\System\Logger\LogManager
      *            Parâmetros da mensagem.
      * @return void
      */
-    public function logRead(string $message = NULL, ...$params)
+    public function logRead(string $message, ...$params)
     {
         $this->command = 'READ';
         $this->message = $message;
