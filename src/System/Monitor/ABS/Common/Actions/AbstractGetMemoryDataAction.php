@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS\Common\Actions;
 
 use GPRS\System\Monitor\ABS\AbstractABSMonitorAction;
+use GPRS\System\Monitor\ABS\ABSTypes;
 
 /**
  * Obtém dados da memória do modem.
@@ -32,13 +33,13 @@ abstract class AbstractGetMemoryDataAction extends AbstractABSMonitorAction
     /**
      * Obtém os estados dos canais de um único tipo.
      *
-     * @param string $type
+     * @param int $type
      *            Tipo de canal.
      * @return string String com 8 bytes entre '0' e '1' onde cada byte representa: 1 = Habilitado; 0 = Desabilitado.
      */
-    private function getChannelStates(string $type): string
+    private function getChannelStates(int $type): string
     {
-        return strrev($this->modem->getData('modem.channel.' . $type));
+        return strrev($this->modem->getData('modem.channel[' . $type . ']'));
     }
 
     /**
@@ -97,12 +98,12 @@ abstract class AbstractGetMemoryDataAction extends AbstractABSMonitorAction
             date('Y/m/d H:i:s', $time), $status);
 
         $channels = [
-            'A1' => $this->getChannelStates('A1'),
-            'A2' => $this->getChannelStates('A2'),
-            'PF' => $this->getChannelStates('PF'),
-            'PC' => $this->getChannelStates('PC'),
-            'TC' => $this->getChannelStates('TC'),
-            'TZ' => $this->getChannelStates('TZ')
+            ABSTypes::MODEM_SENSOR_A1 => $this->getChannelStates(ABSTypes::MODEM_SENSOR_A1),
+            ABSTypes::MODEM_SENSOR_A2 => $this->getChannelStates(ABSTypes::MODEM_SENSOR_A2),
+            ABSTypes::MODEM_SENSOR_PF => $this->getChannelStates(ABSTypes::MODEM_SENSOR_PF),
+            ABSTypes::MODEM_SENSOR_PT => $this->getChannelStates(ABSTypes::MODEM_SENSOR_PT),
+            ABSTypes::MODEM_SENSOR_TT => $this->getChannelStates(ABSTypes::MODEM_SENSOR_TT),
+            ABSTypes::MODEM_SENSOR_AT => $this->getChannelStates(ABSTypes::MODEM_SENSOR_AT)
         ];
 
         if ($this->manager->addModemData($this->modem, $channels, $index, $status, $time, $values)) {

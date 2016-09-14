@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS\Common\Actions;
 
 use GPRS\System\Monitor\ABS\AbstractABSMonitorAction;
+use GPRS\System\Monitor\ABS\ABSTypes;
 
 /**
  * Obtém as informações sobre os canais do modem ou datalogger.
@@ -19,23 +20,23 @@ abstract class AbstractGetChannelsAction extends AbstractABSMonitorAction
     /**
      * Atualiza as informações sobre os estados de um tipo de canal.
      *
-     * @param string $type
+     * @param int $type
      *            Tipo de canal.
      * @param int $states
      *            Estados do tipo de canal (8 bits onde cada bit representa: 1 = Habilitado, 0 = Desabilitado)
      * @return void
      */
-    private function setChannelStates(string $type, int $states)
+    private function setChannelStates(int $type, int $states)
     {
-        $configKey = 'modem.channel.' . $type;
+        $configKey = 'modem.channel[' . $type . ']';
         $newStates = substr('00000000' . decbin($states & 0xFF), - 8);
 
-        // Estados para um tipo de canal não modificado.
+        // Estados não modificados.
         if ($this->modem->getData($configKey) === $newStates) {
             return;
         }
 
-        $this->logger->logInfo('channel: %s, states: %s', $type, $newStates);
+        $this->logger->logInfo('channel: %s, states: %s', ABSTypes::SENSOR_TYPE_NAME[$type], $newStates);
         $this->modem->setData($configKey, $newStates);
     }
 
@@ -48,12 +49,12 @@ abstract class AbstractGetChannelsAction extends AbstractABSMonitorAction
      */
     private function updateChannels(array &$data)
     {
-        $this->setChannelStates('A1', $data[1]); // Entrada analógica 1-8
-        $this->setChannelStates('A2', $data[2]); // Entrada analógica 9-16
-        $this->setChannelStates('PF', $data[3]); // Frequência de pulso
-        $this->setChannelStates('PC', $data[4]); // Totalizador de pulso
-        $this->setChannelStates('TC', $data[5]); // Totalizador de tempo
-        $this->setChannelStates('TZ', $data[6]); // Totalizador de valor analógico
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_A1, $data[1]); // Entrada analógica 1-8
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_A2, $data[2]); // Entrada analógica 9-16
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_PF, $data[3]); // Frequência de pulso
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_PT, $data[4]); // Totalizador de pulso
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_TT, $data[5]); // Totalizador de tempo
+        $this->setChannelStates(ABSTypes::MODEM_SENSOR_AT, $data[6]); // Totalizador de valor analógico
 
         $this->modem->setData('modem.channels', true);
     }

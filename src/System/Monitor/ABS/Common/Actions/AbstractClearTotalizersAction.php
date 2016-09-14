@@ -3,7 +3,7 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor\ABS\Common\Actions;
 
 use GPRS\System\Monitor\ABS\AbstractABSMonitorAction;
-use GPRS\System\Entities\SensorEntity;
+use GPRS\System\Monitor\ABS\ABSTypes;
 
 /**
  * Limpa os valores armazenados nos totalizadores do modem ou datalogger.
@@ -18,23 +18,6 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
 {
 
     /**
-     * Tipos de canais.
-     *
-     * @var array
-     */
-    const SENSOR_TYPE_NAME = [
-
-        SensorEntity::MODEM_SENSOR_MR => 'MR',
-        SensorEntity::MODEM_SENSOR_A1 => 'A1',
-        SensorEntity::MODEM_SENSOR_A2 => 'A2',
-        SensorEntity::MODEM_SENSOR_PF => 'PF',
-        SensorEntity::MODEM_SENSOR_PC => 'PC',
-        SensorEntity::MODEM_SENSOR_TC => 'CT',
-        SensorEntity::MODEM_SENSOR_TZ => 'TZ',
-        SensorEntity::MODEM_SENSOR_SQ => 'SQ'
-    ];
-
-    /**
      * Monta a mensagem para limpeza dos totalizadores.
      *
      * @param array $states
@@ -43,9 +26,9 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
      */
     private function packClearMessage(array &$states): string
     {
-        $pc = ($states['PC'] ?? 0); // Totalizador de pulso
-        $tc = ($states['TC'] ?? 0); // Totalizador de tempo
-        $tz = ($states['TZ'] ?? 0); // Totalizador de valor analógico
+        $pc = ($states[ABSTypes::MODEM_SENSOR_PT] ?? 0); // Totalizador de pulso
+        $tc = ($states[ABSTypes::MODEM_SENSOR_TT] ?? 0); // Totalizador de tempo
+        $tz = ($states[ABSTypes::MODEM_SENSOR_AT] ?? 0); // Totalizador de valor analógico
 
         return $this->modbus->pack16(1, $this->getWriteAddress(), $pc, $tc, $tz, 0, 0, 0, 0, 0, 3);
     }
@@ -58,27 +41,24 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
     private function &getClearList(): array
     {
         $channels = [
-            'PC' => '00000000',
-            'TC' => '00000000',
-            'TZ' => '00000000'
+            ABSTypes::MODEM_SENSOR_PT => '00000000',
+            ABSTypes::MODEM_SENSOR_TT => '00000000',
+            ABSTypes::MODEM_SENSOR_AT => '00000000'
         ];
 
         $sensors = [];
 
         for ($i = 0; ($sensor = $this->modem->getSensor($i)) !== NULL; ++ $i) {
 
-            // Reset não configurado ou desnecessário.
             if (! $sensor->needReset()) {
                 continue;
             }
 
-            $type = self::SENSOR_TYPE_NAME[$sensor->getType()];
+            $type = $sensor->getType();
 
             if (isset($channels[$type])) {
 
-                $index = (7 - $sensor->getIndex());
-
-                $channels[$type][$index] = '1';
+                $channels[$type][(7 - $sensor->getIndex())] = '1';
                 $sensors[] = $sensor;
             }
         }
@@ -103,7 +83,8 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
 
             if (($value = bindec($bits)) > 0) {
 
-                $this->logger->logInfo('reseting channel: %s, reset states: %s', $type, $bits);
+                $this->logger->logInfo('reseting states: %s, channel: %s', $bits, ABSTypes::CHANNEL_TYPE_NAME[$type]);
+
                 $states[$type] = $value;
             }
         }
@@ -122,10 +103,9 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
 
         foreach ($sensors as $sensor) {
 
-            $type = self::SENSOR_TYPE_NAME[$sensor->getType()];
-            $index = $sensor->getIndex();
+            $this->logger->logInfo('reset index %d, channel: %s', $sensor->getIndex(),
+                self::CHANNEL_TYPE_NAME[$sensor->getType()]);
 
-            $this->logger->logInfo('channel: %s reset index %d', $type, $index);
             $sensor->updateResetDate();
         }
 
