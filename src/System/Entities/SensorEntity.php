@@ -146,8 +146,8 @@ final class SensorEntity extends AbstractObject
      */
     public function needReset(): bool
     {
-        // Intervalo de reset não definido.
-        if ($this->resetInterval === 0) {
+        // Intervalo de reset não definido ou inferior ao permitido.
+        if ($this->resetInterval < 60) {
             return false;
         }
 
