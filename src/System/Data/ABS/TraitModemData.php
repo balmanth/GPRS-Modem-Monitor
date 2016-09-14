@@ -2,6 +2,8 @@
 declare(strict_types = 1);
 namespace GPRS\System\Data\ABS;
 
+use GPRS\System\Monitor\ABS\ABSTypes;
+
 /**
  * Processa os dados armazenados pelos sensores do modem ABS/ALR.
  *
@@ -74,16 +76,40 @@ trait TraitModemData
                 $value = false;
 
                 switch ($type) {
-                    case ('A1'): // Entrada analógica 1-8
-                    case ('A2'): // Entrada analógica 9-16
-                    case ('PF'): // Frequencia de pulso
+                    // Entrada analógica 1-8
+                    case (ABSTypes::MODEM_SENSOR_A1):
                         $value = $this->getWord($values, $offset);
+                        $name = 'A1';
                         break;
 
-                    case ('PC'): // Totalizador de pulso
-                    case ('TC'): // Totalizador de tempo
-                    case ('TZ'): // Totalizador de valor analógico
+                    // Entrada analógica 9-16
+                    case (ABSTypes::MODEM_SENSOR_A2):
+                        $value = $this->getWord($values, $offset);
+                        $name = 'A2';
+                        break;
+
+                    // Frequencia de pulso
+                    case (ABSTypes::MODEM_SENSOR_PF):
+                        $value = $this->getWord($values, $offset);
+                        $name = 'FP';
+                        break;
+
+                    // Totalizador de pulso
+                    case (ABSTypes::MODEM_SENSOR_PT):
                         $value = $this->getDWord($values, $offset);
+                        $name = 'CP';
+                        break;
+
+                    // Totalizador de tempo
+                    case (ABSTypes::MODEM_SENSOR_TT):
+                        $value = $this->getDWord($values, $offset);
+                        $name = 'CT';
+                        break;
+
+                    // Totalizador de valor analógico
+                    case (ABSTypes::MODEM_SENSOR_AT):
+                        $value = $this->getDWord($values, $offset);
+                        $name = 'TZ';
                         break;
 
                     // Tipo de canal indefinido
@@ -92,7 +118,7 @@ trait TraitModemData
                 }
 
                 if ($value !== false) {
-                    $normalized["{$type}_{$channel}"] = $value;
+                    $normalized["{$name}_{$channel}"] = $value;
                 }
             }
         }
