@@ -37,6 +37,20 @@ final class ConnectionManager extends AbstractComponentList
     }
 
     /**
+     * Verifica se a conexão esta pronta para uso.
+     *
+     * @param Connection $connection
+     *            Instância da conexão.
+     * @param ModemEntity $modem
+     *            Instância da entidade com informações do modem.
+     * @return bool
+     */
+    private function isReady(Connection $connection, ModemEntity $modem): bool
+    {
+        return (! $connection->isHolding() && $connection->isExclusive($modem) && $connection->isReady());
+    }
+
+    /**
      * Construtor.
      *
      * @param LogManager $logger
@@ -45,6 +59,7 @@ final class ConnectionManager extends AbstractComponentList
     public function __construct(LogManager $logger)
     {
         $this->logger = $logger;
+        $this->exclusivity = [];
 
         parent::__construct();
     }
@@ -69,13 +84,9 @@ final class ConnectionManager extends AbstractComponentList
             $connection = $this->fetchComponent($address);
         }
 
-        if ($connection->isHolding()) {
-            return NULL;
-        }
-
         $this->logger->setConnection($connection);
 
-        if (! $connection->isReady()) {
+        if (! $this->isReady($connection, $modem)) {
             $connection = NULL;
         }
 

@@ -78,8 +78,9 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
 
             $retries = 0;
 
-            // Desativa a espera pela resposta (se a operação for leitura) e avança para a próxima etapa.
             $this->modem->setStageData('response.waiting', false);
+
+            $this->connection->unlock($this->modem);
             $this->modem->nextStage();
         }
 
@@ -94,12 +95,16 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     private function tryWriteCommand(): bool
     {
         if (! $this->connection->canWrite()) {
+
             $this->updateFailedAttempts('write', self::MAX_WRITING_RETRY);
             return false;
         }
 
         if (! $this->writeCommand()) {
+
+            $this->connection->unlock($this->modem);
             $this->modem->nextStage();
+
             return false;
         }
 
@@ -117,11 +122,13 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     private function tryReadCommand(): bool
     {
         if (! $this->connection->canRead()) {
+
             $this->updateFailedAttempts('read', self::MAX_READING_RETRY);
             return false;
         }
 
         if (! $this->readResponse()) {
+
             $this->sleepModem(10, false);
             return false;
         }
@@ -129,21 +136,10 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
         $this->modem->setData('response.read.try', 0);
         $this->modem->setStageData('response.waiting', false);
 
+        $this->connection->unlock($this->modem);
         $this->modem->nextStage();
-        return true;
-    }
 
-    /**
-     * Envia uma mensagem para o modem.
-     *
-     * @param string $message
-     *            Mensagem do comando Modbus.
-     * @return bool True quando a mensagem foi enviada.
-     *         False quando contrário.
-     */
-    protected function writeMessage(string $message): bool
-    {
-        return $this->connection->writeMessage($message);
+        return true;
     }
 
     /**
@@ -166,7 +162,7 @@ abstract class AbstractABSMonitorAction extends AbstractMonitorCallable
     {
         $message = '';
 
-        if ($this->connection->readMessage($message, $length)) {
+        if ($this->receiveMessage($message, $length)) {
 
             $response = $this->modbus->unpack($message, $address, $func, $mask);
             return true;

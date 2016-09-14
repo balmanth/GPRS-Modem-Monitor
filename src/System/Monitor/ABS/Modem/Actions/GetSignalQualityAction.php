@@ -97,7 +97,7 @@ final class GetSignalQualityAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         $message = $this->modbus->pack4(1, 65000, 1);
-        return $this->writeMessage($message);
+        return $this->sendMessage($message);
     }
 
     /**
@@ -108,10 +108,15 @@ final class GetSignalQualityAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 4, 7, $response, 'c2')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 7)) {
+
+            $response = $this->modbus->unpack($message, 1, 4, 'c2');
 
             $this->updateSignalQuality($response['data']);
             $this->sleepStage(180); // Próxima execução em 3min.
+
             return true;
         }
 

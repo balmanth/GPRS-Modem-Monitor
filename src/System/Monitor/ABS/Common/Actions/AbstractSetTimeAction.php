@@ -60,7 +60,7 @@ abstract class AbstractSetTimeAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         if ((bool) $this->modem->getData('modem.updates.time')) {
-            return $this->writeMessage($this->packCurrentTimeMessage());
+            return $this->sendMessage($this->packCurrentTimeMessage());
         }
 
         $this->sleepStage(1800); // Próxima execução em 30min
@@ -75,7 +75,11 @@ abstract class AbstractSetTimeAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 16, 8, $response)) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 8)) {
+
+            $this->modbus->unpack($message, 1, 16);
 
             $this->updatedTime();
             $this->sleepStage(1800); // Próxima execução em 30min

@@ -144,7 +144,7 @@ abstract class AbstractGetMemoryDataAction extends AbstractABSMonitorAction
      */
     protected function writeCommand(): bool
     {
-        if ($this->isReady() && $this->writeMessage($this->packLoadMessage())) {
+        if ($this->isReady() && $this->sendMessage($this->packLoadMessage())) {
 
             $this->logger->logInfo('loading data index: %05d', $this->modem->getNextIndex());
             return true;
@@ -161,7 +161,11 @@ abstract class AbstractGetMemoryDataAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 23, 133, $response, 'n8v/c*')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 133)) {
+
+            $response = $this->modbus->unpack($message, 1, 23, 'n8v/c*');
 
             $this->parseLoadedData($response['data']);
             return true;

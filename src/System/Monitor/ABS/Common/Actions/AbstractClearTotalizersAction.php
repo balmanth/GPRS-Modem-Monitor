@@ -143,7 +143,7 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
         $states = $this->getClearStates($this->getClearList());
 
         if (! empty($states)) {
-            return $this->writeMessage($this->packClearMessage($states));
+            return $this->sendMessage($this->packClearMessage($states));
         }
 
         return false;
@@ -157,10 +157,15 @@ abstract class AbstractClearTotalizersAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 16, 8, $response)) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 8)) {
+
+            $this->modbus->unpack($message, 1, 16);
 
             $this->updateClearedChannels();
             $this->sleepStage(120); // Próxima execução em 2min
+
             return true;
         }
 

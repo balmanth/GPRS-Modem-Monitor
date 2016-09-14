@@ -43,7 +43,7 @@ abstract class AbstractGetTimeAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         $message = $this->modbus->pack4(1, $this->getReadAddress(), 6);
-        return $this->writeMessage($message);
+        return $this->sendMessage($message);
     }
 
     /**
@@ -54,7 +54,11 @@ abstract class AbstractGetTimeAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 4, 17, $response, 'n6')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 17)) {
+
+            $response = $this->modbus->unpack($message, 1, 4, 'n6');
 
             $this->updateTime($response['data']);
             $this->sleepStage(3600); // Próxima execução em 1h

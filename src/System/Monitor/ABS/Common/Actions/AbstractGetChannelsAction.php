@@ -67,7 +67,7 @@ abstract class AbstractGetChannelsAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         $message = $this->modbus->pack4(1, $this->getReadAddress(), 6);
-        return $this->writeMessage($message);
+        return $this->sendMessage($message);
     }
 
     /**
@@ -78,7 +78,11 @@ abstract class AbstractGetChannelsAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 4, 17, $response, 'n6')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 17)) {
+
+            $response = $this->modbus->unpack($message, 1, 4, 'n6');
 
             $this->updateChannels($response['data']);
             $this->sleepStage(600); // Próxima execução em 10min.

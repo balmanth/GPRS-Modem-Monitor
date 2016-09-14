@@ -41,7 +41,7 @@ abstract class AbstractGetDeviceInfoAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         $message = $this->modbus->pack4(1, $this->getReadAddress(), 8);
-        return $this->writeMessage($message);
+        return $this->sendMessage($message);
     }
 
     /**
@@ -52,10 +52,15 @@ abstract class AbstractGetDeviceInfoAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 4, 21, $response, 'n8')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 21)) {
+
+            $response = $this->modbus->unpack($message, 1, 4, 'n8');
 
             $this->updateMemoryInfo($response['data']);
             $this->sleepStage(1800); // Próxima execução em 30min
+
             return true;
         }
 

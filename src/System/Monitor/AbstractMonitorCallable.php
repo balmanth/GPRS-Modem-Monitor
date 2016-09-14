@@ -3,8 +3,9 @@ declare(strict_types = 1);
 namespace GPRS\System\Monitor;
 
 use BCL\System\AbstractObject;
-use BCL\System\ModemManagerInterface;
 use BCL\System\Logger\LogManager;
+use GPRS\System\Connection;
+use GPRS\System\ModemManagerInterface;
 use GPRS\System\Entities\ModemEntity;
 
 /**
@@ -18,6 +19,13 @@ use GPRS\System\Entities\ModemEntity;
  */
 abstract class AbstractMonitorCallable extends AbstractObject
 {
+
+    /**
+     * Instância da conexão.
+     *
+     * @var Connection
+     */
+    private $connection;
 
     /**
      * Instância do gerenciador de modems.
@@ -52,7 +60,7 @@ abstract class AbstractMonitorCallable extends AbstractObject
      *
      * @return bool
      */
-    private function waitModem(): bool
+    private function modemWaiting(): bool
     {
         if (time() < (int) $this->modem->getData('monitor.waitTime')) {
             return true;
@@ -67,11 +75,11 @@ abstract class AbstractMonitorCallable extends AbstractObject
     }
 
     /**
-     * Verifica se a etapa atual esta em espera.
+     * Verifica se a etapa atual do modem esta em espera.
      *
      * @return bool
      */
-    private function waitStage(): bool
+    private function stageWaiting(): bool
     {
         if (time() < (int) $this->modem->getStageData('monitor.waitTime')) {
 
@@ -109,7 +117,7 @@ abstract class AbstractMonitorCallable extends AbstractObject
     }
 
     /**
-     * Coloca a etapa atual em espera.
+     * Coloca a etapa atual do modem em espera.
      *
      * @param int $seconds
      *            Tempo em segundos.
@@ -130,6 +138,48 @@ abstract class AbstractMonitorCallable extends AbstractObject
     }
 
     /**
+     * Envia uma mensagem para o modem e marca a conexão como exclusiva.
+     *
+     * @param string $message
+     *            Mensagem do comando Modbus.
+     * @return bool True quando a mensagem foi enviada.
+     *         False quando contrário.
+     */
+    protected function sendMessage(string $message): bool
+    {
+        if ($this->connection->writeMessage($message)) {
+
+            $this->connection->lock($this->modem);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Recebe uma mensagem do modem e desmarca a conexão como exclusiva.
+     *
+     * @param string $message
+     *            Mensagem de resposta Modbus (Atualizado por referência).
+     * @param int $length
+     *            Comprimento esperado para mensagem.
+     * @return bool rue quando a mensagem foi recebida.
+     *         False quando contrário.
+     */
+    protected function receiveMessage(string &$message, int $length): bool
+    {
+        $message = '';
+
+        if ($this->connection->readMessage($message, $length)) {
+
+            $this->connection->unlock($this->modem);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Quando a objeto callable é executado.
      * Inicia as configurações para execução da ação.
      *
@@ -139,11 +189,12 @@ abstract class AbstractMonitorCallable extends AbstractObject
      */
     public function __invoke(MonitorStageAction $action)
     {
+        $this->connection = $action->getConnection();
         $this->manager = $action->getModemManager();
         $this->modem = $action->getModemEntity();
         $this->logger = $action->getLogger();
 
-        if (! $this->waitStage() && ! $this->waitModem()) {
+        if (! $this->stageWaiting() && ! $this->modemWaiting()) {
 
             try {
                 if ($this->execute()) {

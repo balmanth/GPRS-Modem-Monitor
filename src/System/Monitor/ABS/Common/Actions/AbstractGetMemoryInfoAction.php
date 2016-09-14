@@ -50,7 +50,7 @@ abstract class AbstractGetMemoryInfoAction extends AbstractABSMonitorAction
     protected function writeCommand(): bool
     {
         $message = $this->modbus->pack4(1, $this->getReadAddress(), 5);
-        return $this->writeMessage($message);
+        return $this->sendMessage($message);
     }
 
     /**
@@ -61,7 +61,11 @@ abstract class AbstractGetMemoryInfoAction extends AbstractABSMonitorAction
      */
     protected function readResponse(): bool
     {
-        if ($this->readMessage(1, 4, 15, $response, 'n5')) {
+        $message = '';
+
+        if ($this->receiveMessage($message, 15)) {
+
+            $response = $this->modbus->unpack($message, 1, 4, 'n5');
 
             $this->updateMemoryInfo($response['data']);
             $this->sleepStage(600); // Próxima execução em 10min.

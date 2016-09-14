@@ -34,6 +34,13 @@ final class Connection extends AbstractComponent
     const COMMUNICATION_TIME = 600;
 
     /**
+     * Tabela de exclusividade das conexões.
+     *
+     * @var array
+     */
+    private static $exclusivity = [];
+
+    /**
      * Instância do gerenciador de registros.
      *
      * @var LogManager
@@ -62,14 +69,19 @@ final class Connection extends AbstractComponent
     private $waitTime;
 
     /**
+     * Código hash do modem que solicitou exclusividade para conexão.
+     *
+     * @var string
+     */
+    private $lockedHash;
+
+    /**
      * Inicia uma tentativa de conexão.
      *
      * @return void
      */
     private function connect()
     {
-        $this->logger->setConnection($this);
-
         try {
             $this->stream->connect();
             sleep(2);
@@ -78,8 +90,6 @@ final class Connection extends AbstractComponent
             $this->waitTime = (time() + 300);
             $this->logger->logException($exception);
         }
-
-        $this->logger->setConnection(NULL);
     }
 
     /**
@@ -124,7 +134,9 @@ final class Connection extends AbstractComponent
         $this->stream->setWriteTimeout(self::COMMUNICATION_TIME);
         $this->stream->setReadTimeout(self::COMMUNICATION_TIME);
 
+        $this->logger->setConnection($this);
         $this->connect();
+        $this->logger->setConnection(NULL);
     }
 
     /**
@@ -181,6 +193,64 @@ final class Connection extends AbstractComponent
 
         $this->logger->logRead('failed on read %d of %d expected bytes, try again', strlen($message), $length);
         return false;
+    }
+
+    /**
+     * Verifica se a conexão pode ser exclusiva para um modem.
+     *
+     * @param ModemEntity $modem
+     *            Instância da entidade com informações do modem.
+     * @return bool
+     */
+    public function isExclusive(ModemEntity $modem): bool
+    {
+        $hashCode = $this->getHashCode();
+
+        if (! isset(self::$exclusivity[$hashCode])) {
+            return true;
+        }
+
+        return (self::$exclusivity[$hashCode] === $modem);
+    }
+
+    /**
+     * Define a conexão como exclusiva para um modem.
+     * Evita processamento desordenado de mensagens vindas do mesmo servidor durante a concorrência da conexão.
+     *
+     * @param ModemEntity $modem
+     *            Instância da entidade com informações do modem.
+     * @return void
+     * @throws \Exception
+     */
+    public function lock(ModemEntity $modem)
+    {
+        if (! $this->isExclusive($modem)) {
+
+            $message = sprintf('A conexão %s é exclusiva para outro modem.', $this->componentId);
+            throw new \Exception($message);
+        }
+
+        self::$exclusivity[$this->getHashCode()] = $modem;
+    }
+
+    /**
+     * Desativa a exclusividade da conexão para um modem.
+     * Permite que outro modem defina uma exclusividade.
+     *
+     * @param ModemEntity $modem
+     *            Instância da entidade com informações do modem.
+     * @return void
+     * @throws \Exception
+     */
+    public function unlock(ModemEntity $modem)
+    {
+        if (! $this->isExclusive($modem)) {
+
+            $message = sprintf('A conexão %s não é exclusiva para este modem.', $this->componentId);
+            throw new \Exception($message);
+        }
+
+        unset(self::$exclusivity[$this->getHashCode()]);
     }
 
     /**
