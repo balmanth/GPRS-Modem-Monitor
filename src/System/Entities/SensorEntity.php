@@ -17,62 +17,6 @@ final class SensorEntity extends AbstractObject
 {
 
     /**
-     * Dados seriais (MRI).
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_MR = 0x01;
-
-    /**
-     * Valor analógico (Parte 1 a 8).
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_A1 = 0x02;
-
-    /**
-     * Valor analógico (Parte 9 a 16).
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_A2 = 0x03;
-
-    /**
-     * Frequência de pulso.
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_PF = 0x04;
-
-    /**
-     * Contagem de pulso.
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_PC = 0x05;
-
-    /**
-     * Contagem de tempo.
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_TC = 0x06;
-
-    /**
-     * Totalizador de valor analógico.
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_TZ = 0x07;
-
-    /**
-     * Qualidade do sinal.
-     *
-     * @var int
-     */
-    const MODEM_SENSOR_SQ = 0x08;
-
-    /**
      * Informações do sensor.
      *
      * @var array
