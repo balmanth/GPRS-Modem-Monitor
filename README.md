@@ -9,28 +9,29 @@ Serviço para leitura de atividades registradas por um modem celular utilizado e
 * Protocolo de comunicação Modbus.
 * Multiplas conexões em modo assíncrono.
 * Comunicação com vários equipamentos em paralelo.
-* Log das atividades do serviço.
-* Utilize banco de dados ou sua API.
-* Extensão de funcionalidades com hooks.
+* [Log das atividades do serviço.](#log-de-atividade)
+* [Utilize banco de dados ou API.](#banco-de-dados-ou-api)
+* [Extensão de funcionalidades com hooks.](#hooks)
 
-## Log das atividades
+## Log de atividade
 Todas as atividades principais do serviço geram mensagens de log, através de manipuladores é possível determinar qual será a ação tomada com as informações da atividade executada.
 
 + **Manipuladores**
 	* EchoLogger, Envia toda informação da atividade executada para STDOUT.
 
-## Banco de Dados ou API
+## Banco de dados ou API
 Suporte para carregamento de informações do banco de dados ou API.
-+ Tipos de carregamento:
+
++ **Tipos de carregamento**
 	* Informações para conexão com os equipamentos.
 	* Informações para conversão de valores brutos (lidos da memória do equipamento).
 
 ## Hooks
-Utilize hooks para estender as funcionalidades, criar relatórios personalizados ou executar ações em resposta aos eventos do equipamento.
+Utilize hooks para estender funcionalidades ou executar ações em resposta aos eventos do equipamento.
 Todas as notificações são enviadas após processamento de uma mensagem de resposta do equipamento.
-É de responsabilidade do módulo enviar as notificações, logo, se um módulo estiver desativado suas respectivas notificações não serão processadas.
+É de responsabilidade dos módulos de ação enviar quaisquer notificações, se uma ação estiver desativada suas respectivas notificações não serão processadas.
 
-+ Notificações dos módulos para equipamentos ABS:
++ **Notificações**
 	* Informações do hardware.
     * Limpeza dos valores nos totalizadores.
     * Data e hora.
@@ -41,20 +42,18 @@ Todas as notificações são enviadas após processamento de uma mensagem de res
     * Valores da memória do equipamento.
     
 ## Equipamentos
-* **Modem e Datalogger ABS**
-  + Geral
-    * Módulo para leitura das informações sobre o hardware.
-    * Módulo para limpeza dos valores nos totalizadores.
-  + Relógio
-    * Módulo para leitura de data e hora.
-    * Módulo para sincronizar data e hora.
-  + Sinal
-    * Módulo para leitura nível de sinal (dBm).
-  + Canais
-    * Módulo para leitura da configuração dos canais.
-  + Memória
-    * Módulo para leitura das informações sobre a memória.
-    * Módulo para leitura dos dados armazenadas na memória.
+* **Modems e Dataloggers ABS**
+	+ Ações
+		* Obtér informações sobre o hardware.
+		* Obtér a data e hora do relógio interno.
+		* Ler quais canais estão habilitados.
+		* Obtér informações sobre a memória.
+		* Ler dados armazenadas na memória a partir de um índice.
+		* Limpar os valores dos totalizadores.
+		* Sincronizar a data e hora do relógio interno.
+* **Modems ABS**
+	+ Ações
+		* Obtér nível de sinal.
 
 ## Requisitos
 + PHP 7.0
