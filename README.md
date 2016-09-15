@@ -29,7 +29,7 @@ Suporte para carregamento de informações do banco de dados ou API.
 ## Hooks
 Utilize hooks para estender funcionalidades ou executar ações em resposta aos eventos do equipamento.
 Todas as notificações são enviadas após processamento de uma mensagem de resposta do equipamento.
-É de responsabilidade dos módulos de ação enviar quaisquer notificações, se uma ação estiver desativada suas respectivas notificações não serão processadas.
+É de responsabilidade dos módulos de ação enviar quaisquer notificações, se uma ação estiver desativada suas respectivas notificações não serão disparadas.
 
 + **Notificações**
 	* Informações do hardware.
@@ -39,7 +39,7 @@ Todas as notificações são enviadas após processamento de uma mensagem de res
     * Nível de sinal.
     * Configuração dos canais.
     * Informações sobre a memória.
-    * Valores da memória do equipamento.
+    * Dados da memória do equipamento.
     
 ## Equipamentos
 * **Modems e Dataloggers ABS**
